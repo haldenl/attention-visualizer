@@ -5851,6 +5851,12 @@ react-dom@^16.4.0:
     object-assign "^4.1.1"
     prop-types "^15.6.0"
 
+react-minimap@^0.7.4:
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/react-minimap/-/react-minimap-0.7.4.tgz#8ba3b21629fd4c954adcd91570e3c798d835126f"
+  dependencies:
+    lodash "^4.17.4"
+
 react-split-pane@^0.1.77:
   version "0.1.77"
   resolved "https://registry.yarnpkg.com/react-split-pane/-/react-split-pane-0.1.77.tgz#f0c8cd18d076bbac900248dcf6dbcec02d5340db"

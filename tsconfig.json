@@ -14,6 +14,6 @@
     "src/index.tsx"
   ],
   "include": [
-    "typings/*.d.ts"
+    "src/typings/*.d.ts"
   ]
 }

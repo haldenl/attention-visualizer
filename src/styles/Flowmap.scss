@@ -1,0 +1,31 @@
+@import 'base.scss';
+
+.Flowmap {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  .edge {
+    fill: none;
+    stroke: #777777;
+    opacity: 0.1;
+  }
+
+  .edge.selected {
+    stroke: $light-red;
+    opacity: 0.5;
+  }
+
+  .node {
+  }
+
+  .node.output {
+    fill: #c9c9c9;
+    // cursor: crosshair;
+  }
+
+  .node.output.selected {
+    fill: $light-red;
+  }
+}

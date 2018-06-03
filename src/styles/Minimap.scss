@@ -1,0 +1,22 @@
+.minimap-viewport {
+  position: absolute;
+  box-sizing: border-box;
+  background-color: rgba(70, 70, 70, 0.4);
+  z-index: 1;
+  cursor: default; }
+
+.minimap {
+  float: right;
+  position: absolute;
+  top: 10px;
+  right: 0;
+  z-index: 1;
+  margin: 0 20px 0 0;
+  background-color: rgba(0, 0, 0, 0.29);
+  border: 1px solid rgba(0, 0, 0, 0.17); }
+
+.minimap-container {
+  overflow: scroll;
+  width: 100%;
+  height: 100%;
+}

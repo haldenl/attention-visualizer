@@ -1,0 +1,7 @@
+.OutputText .text {
+  padding: 8px;
+  cursor: default; }
+  .OutputText .text .token.selected {
+    background-color: #ffa6a6; }
+  .OutputText .text .token::selection {
+    background: transparent; }

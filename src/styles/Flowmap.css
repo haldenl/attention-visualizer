@@ -1,0 +1,16 @@
+.Flowmap {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0; }
+  .Flowmap .edge {
+    fill: none;
+    stroke: #777777;
+    opacity: 0.1; }
+  .Flowmap .edge.selected {
+    stroke: #ffa6a6;
+    opacity: 0.5; }
+  .Flowmap .node.output {
+    fill: #c9c9c9; }
+  .Flowmap .node.output.selected {
+    fill: #ffa6a6; }

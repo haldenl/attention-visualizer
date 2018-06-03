@@ -1,0 +1,9 @@
+.InputText {
+  position: relative;
+  height: 100%;
+
+  .text {
+    padding: 8px 128px 8px 8px;  // space for minimap
+    overflow: auto;
+  }
+}

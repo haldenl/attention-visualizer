@@ -1,0 +1,18 @@
+@import 'base.scss';
+
+.OutputText {
+  .text {
+    padding: 8px;
+    cursor: default;
+
+    .token {
+      &.selected {
+        background-color: $light-red;
+      }
+
+      &::selection {
+        background: transparent;
+      }
+    }
+  }
+}
