@@ -128,11 +128,14 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
    */
   static getFlowmapAttentionData(data: AttentionData,
       filter?: (attentionRecord: AttentionRecord) => boolean): FlowmapAttentionRecord[] {
-    return data.attentionRecords.map(function(record: AttentionRecord) {
+
+    return data.attentionRecords.map(function(record: AttentionRecord, index: number) {
       return {
         ...record,
-        selected: filter ? filter(record) : false
+        index
       }
+    }).filter(function(record: FlowmapAttentionRecord) {
+      return filter ? filter(record) : true;
     });
   }
 
@@ -154,10 +157,12 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       }
     });
 
+    const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(this.props.data, outputFilter);
+
     const flowmapData = {
       inputRecords: inputData,
       outputRecords: outputData,
-      attentionRecords:  AttentionVisualizer.getFlowmapAttentionData(this.props.data, outputFilter)
+      attentionRecords:  attentionRecords
     }
     
     this.setState({

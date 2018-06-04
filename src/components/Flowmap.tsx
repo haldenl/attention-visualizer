@@ -21,10 +21,13 @@ interface State {
   xScale: any;
   path: any;
   edgeWidthScale: any;
+  edgeColorScale: any;
+  edgeColorScaleCopy: any;
 }
 
 export interface FlowmapAttentionRecord extends AttentionRecord {
-  selected: boolean;
+  index: number;
+  selected?: boolean;
 }
 
 export interface FlowmapData {
@@ -37,9 +40,9 @@ export default class Flowmap extends React.Component<Props, State> {
   divElement: SVGSVGElement;
   static margin = {
     top: 16,
-    right: 16,
+    right: 32,
     bottom: 16,
-    left: 16
+    left: 32
   };
   static nodeWidth = 10;
   chart: any;
@@ -57,7 +60,9 @@ export default class Flowmap extends React.Component<Props, State> {
       outputScale: null,
       xScale: null,
       path: null,
-      edgeWidthScale: null
+      edgeWidthScale: null,
+      edgeColorScale: null,
+      edgeColorScaleCopy: null
     }
   }
 
@@ -74,7 +79,7 @@ export default class Flowmap extends React.Component<Props, State> {
     const inputColorScale =  d3.scaleSequential(d3.interpolateBlues).domain(inputWeightDomain);
 
     const outputScale = d3.scaleBand()
-      .padding(0.1)
+      .padding(0.2)
       // @ts-ignore      
       .domain(d3.range(0, nextProps.data.outputRecords.length));
 
@@ -101,15 +106,19 @@ export default class Flowmap extends React.Component<Props, State> {
     }
 
     const edgeWidthScale = d3.scaleLinear()
-    .range([0, 10])
-    .domain(d3.extent(nextProps.data.attentionRecords, (d) => {
-      return d.weight;
-    }));
+      .range([0, Flowmap.nodeWidth / 2])
+      .domain([0, 1]);
+
+    const edgeColorScale = d3.scaleSequential(d3.interpolateRdPu)
+      .domain([0, 1 * WEIGHT_SCALE])
+      
+    const edgeColorScaleCopy = d3.scaleSequential(d3.interpolateBlues)
+      .domain([0, 1 * WEIGHT_SCALE]);
 
     const filteredAttentionRecords = nextProps.data.attentionRecords.filter(function(record: FlowmapAttentionRecord) {
       return edgeWidthScale(record.weight) >= 1;
     });
-  
+
     return {
       inputScale,
       inputColorScale,
@@ -117,21 +126,38 @@ export default class Flowmap extends React.Component<Props, State> {
       xScale,
       path,
       edgeWidthScale,
+      edgeColorScale,
+      edgeColorScaleCopy,
       filteredAttentionRecords
     }
   }
 
   componentDidMount() {
-    const height = this.divElement.clientHeight - Flowmap.margin.top - Flowmap.margin.bottom;
-    const width = this.divElement.clientWidth - Flowmap.margin.left - Flowmap.margin.right;
-
-    // set ranges for scales now that we have the proper sizing
-    this.state.inputScale.range([0, height]);
-    this.state.outputScale.range([0, height]);
-    this.state.xScale.range([0, width - Flowmap.nodeWidth]);
+    this.updateWidthHeight();
 
     this.chart = d3.select(this.divElement).append('g')
       .attr('transform', `translate(${Flowmap.margin.left}, ${Flowmap.margin.top})`);
+
+    this.edges = this.chart.append('g');
+    this.edges.selectAll('.edge')
+      .data(this.state.filteredAttentionRecords)
+      .enter()
+      .append('path')
+      .attr('class', (d: FlowmapAttentionRecord) => {
+        return classNames({
+          'edge': true,
+          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token
+        })
+      })
+      .style('stroke', (d: FlowmapAttentionRecord) => {
+        if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+          return this.state.edgeColorScaleCopy(d.weight);
+        } else {
+          return this.state.edgeColorScale(d.weight);
+        }
+      })
+      .attr('d', this.state.path)
+      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
 
     this.inputNodes = this.chart.append('g');
     this.inputNodes.selectAll('.node')
@@ -166,26 +192,55 @@ export default class Flowmap extends React.Component<Props, State> {
           return index === d.index;
         });
       });;
-
-    this.edges = this.chart.append('g');
-    this.edges.selectAll('.edge')
-      .data(this.state.filteredAttentionRecords)
-      .enter()
-      .append('path')
-      .attr('class', 'edge')
-      .attr('d', this.state.path)
-      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
   }
 
   componentDidUpdate(prevProps: Props, prevState: State, snapshot: any) {
-    this.edges.selectAll('.edge')
-      .data(this.state.filteredAttentionRecords)
+    this.updateWidthHeight();
+
+    const newEdges = this.edges.selectAll('.edge')
+      .data(this.state.filteredAttentionRecords, function(d: FlowmapAttentionRecord) {
+        return d.index;
+      });
+
+    newEdges.exit().remove();
+    newEdges.enter()
+      .append('path')
       .attr('class', (d: FlowmapAttentionRecord) => {
         return classNames({
           'edge': true,
-          'selected': d.selected
+          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token
+        })
+      })
+      .style('stroke', (d: FlowmapAttentionRecord) => {
+        if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+          return this.state.edgeColorScaleCopy(d.weight);
+        } else {
+          return this.state.edgeColorScale(d.weight);
+        }
+      })
+      .attr('d', this.state.path)
+      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
+
+    newEdges
+      .attr('class', (d: FlowmapAttentionRecord) => {
+        return classNames({
+          'edge': true,
+          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token
         });
-      });
+      })
+      .style('stroke', (d: FlowmapAttentionRecord) => {
+        if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+          return this.state.edgeColorScaleCopy(d.weight);
+        } else {
+          return this.state.edgeColorScale(d.weight);
+        }
+      })
+      .attr('d', this.state.path)
+      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
+
+    this.inputNodes.selectAll('.node')
+      .data(this.props.data.inputRecords)
+      .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); });
 
     this.outputNodes.selectAll('.node')
       .data(this.props.data.outputRecords)
@@ -203,5 +258,15 @@ export default class Flowmap extends React.Component<Props, State> {
       <svg className="Flowmap" ref={ (divElement) => this.divElement = divElement }>
       </svg>
     );
+  }
+
+  private updateWidthHeight() {
+    const height = this.divElement.clientHeight - Flowmap.margin.top - Flowmap.margin.bottom;
+    const width = this.divElement.clientWidth - Flowmap.margin.left - Flowmap.margin.right;
+
+    // set ranges for scales now that we have the proper sizing
+    this.state.inputScale.range([0, height]);
+    this.state.outputScale.range([0, height]);
+    this.state.xScale.range([0, width - Flowmap.nodeWidth]);
   }
 }

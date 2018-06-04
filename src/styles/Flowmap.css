@@ -5,12 +5,11 @@
   padding: 0; }
   .Flowmap .edge {
     fill: none;
-    stroke: #777777;
-    opacity: 0.1; }
-  .Flowmap .edge.selected {
-    stroke: #ffa6a6;
-    opacity: 0.5; }
+    opacity: 0.25; }
   .Flowmap .node.output {
-    fill: #c9c9c9; }
-  .Flowmap .node.output.selected {
-    fill: #ffa6a6; }
+    stroke-width: 1px;
+    stroke: #e9e9e9;
+    fill: transparent; }
+    .Flowmap .node.output.selected {
+      fill: #ffa6a6;
+      stroke: transparent; }

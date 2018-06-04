@@ -8,24 +8,24 @@
 
   .edge {
     fill: none;
-    stroke: #777777;
-    opacity: 0.1;
-  }
+    // stroke: $dark-red;    
+    opacity: 0.25;
 
-  .edge.selected {
-    stroke: $light-red;
-    opacity: 0.5;
+    &.copy {
+      // stroke: #bdbdf0;
+    }
   }
 
   .node {
-  }
+    &.output {
+      stroke-width: 1px;
+      stroke: $light-grey;
+      fill: transparent;
 
-  .node.output {
-    fill: #c9c9c9;
-    // cursor: crosshair;
-  }
-
-  .node.output.selected {
-    fill: $light-red;
+      &.selected {
+        fill: $light-red;
+        stroke: transparent;
+      }
+    }
   }
 }

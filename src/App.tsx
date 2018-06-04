@@ -9,7 +9,7 @@ interface State {
   data: AttentionData;
 }
 
-const DATA_URL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_1.json';
+const DATA_URL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_3.json';
 
 export default class App extends React.Component<any, any> {
   constructor(props: any) {
