@@ -138,10 +138,9 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     return data.attentionRecords.map(function(record: AttentionRecord, index: number) {
       return {
         ...record,
-        index
+        index,
+        selected: filter ? filter(record) : true
       }
-    }).filter(function(record: FlowmapAttentionRecord) {
-      return filter ? filter(record) : true;
     });
   }
 

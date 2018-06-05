@@ -6,6 +6,8 @@
   .Flowmap .edge {
     fill: none;
     opacity: 0.5; }
+    .Flowmap .edge.faded {
+      opacity: 0.02; }
   .Flowmap .node.output {
     stroke-width: 1px;
     stroke: #e9e9e9;

@@ -26,6 +26,7 @@ interface State {
   edgeWidthScale: any;
   edgeColorScale: any;
   edgeColorScaleCopy: any;
+  edgeColorScaleGrey: any;
   selectedInputNodes: any;
   selectedOutputNodes: Set<number>;
 }
@@ -81,6 +82,7 @@ export default class Flowmap extends React.Component<Props, State> {
       edgeWidthScale: null,
       edgeColorScale: null,
       edgeColorScaleCopy: null,
+      edgeColorScaleGrey: null,
       selectedInputNodes: null,
       selectedOutputNodes: null
     }
@@ -142,14 +144,19 @@ export default class Flowmap extends React.Component<Props, State> {
     const edgeColorScaleCopy = d3.scaleSequential(d3.interpolateBlues)
       .domain([0, 1 * WEIGHT_SCALE]);
 
+    const edgeColorScaleGrey = d3.scaleSequential(d3.interpolateGreys)
+      .domain([0, 1 * WEIGHT_SCALE]);
+
     const filteredAttentionRecords = nextProps.data.attentionRecords.filter(function(record: FlowmapAttentionRecord) {
       return edgeWidthScale(record.weight) >= 1.1;
     });
 
     // @ts-ignore
     const { selectedInputNodes, selectedOutputNodes } = filteredAttentionRecords.reduce(function(sets: any, record: FlowmapAttentionRecord) {
-      sets.selectedInputNodes[record.inputIndex] = nextProps.data.inputRecords[record.inputIndex].token === nextProps.data.outputRecords[record.outputIndex].token;
-      sets.selectedOutputNodes.add(record.outputIndex);
+      if (record.selected) {
+        sets.selectedInputNodes[record.inputIndex] = nextProps.data.inputRecords[record.inputIndex].token === nextProps.data.outputRecords[record.outputIndex].token;
+        sets.selectedOutputNodes.add(record.outputIndex);
+      }
       return sets;
     }, { 'selectedInputNodes': {}, 'selectedOutputNodes': new Set() });
 
@@ -162,6 +169,7 @@ export default class Flowmap extends React.Component<Props, State> {
       edgeWidthScale,
       edgeColorScale,
       edgeColorScaleCopy,
+      edgeColorScaleGrey,
       filteredAttentionRecords,
       selectedInputNodes,
       selectedOutputNodes
@@ -306,43 +314,26 @@ export default class Flowmap extends React.Component<Props, State> {
     const newEdges = this.edges.selectAll('.edge')
       .data(this.state.filteredAttentionRecords, function(d: FlowmapAttentionRecord) {
         return d.index;
-      });
-
-    newEdges.exit().remove();
-    newEdges.enter()
-      .append('path')
+      })
+    this.edges.selectAll('.edge')
+      .style('stroke', (d: FlowmapAttentionRecord) => {
+        if (d.selected) {
+          if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+            return this.state.edgeColorScaleCopy(d.weight);
+          } else {
+            return this.state.edgeColorScale(d.weight);
+          }
+        } else {
+          return '#000';
+        }
+      })
       .attr('class', (d: FlowmapAttentionRecord) => {
         return classNames({
           'edge': true,
-          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token
+          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
+          'faded': !d.selected
         })
-      })
-      .style('stroke', (d: FlowmapAttentionRecord) => {
-        if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
-          return this.state.edgeColorScaleCopy(d.weight);
-        } else {
-          return this.state.edgeColorScale(d.weight);
-        }
-      })
-      .attr('d', this.state.path)
-      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
-
-    newEdges
-      .attr('class', (d: FlowmapAttentionRecord) => {
-        return classNames({
-          'edge': true,
-          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token
-        });
-      })
-      .style('stroke', (d: FlowmapAttentionRecord) => {
-        if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
-          return this.state.edgeColorScaleCopy(d.weight);
-        } else {
-          return this.state.edgeColorScale(d.weight);
-        }
-      })
-      .attr('d', this.state.path)
-      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
+      });
 
     this.inputNodes.selectAll('.node')
       .data(this.props.data.inputRecords)
