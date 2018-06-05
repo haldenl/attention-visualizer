@@ -24,10 +24,10 @@
     &.output {
       stroke-width: 1px;
       stroke: $light-grey;
-      fill: #fff;
+      // fill: #fff;
 
       &.selected {
-        fill: $light-red;
+        // fill: $light-red;
         stroke: transparent;
       }
 

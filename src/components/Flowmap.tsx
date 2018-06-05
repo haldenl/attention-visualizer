@@ -7,11 +7,13 @@ import { InputRecord, WEIGHT_SCALE } from './InputText';
 import { OutputRecord } from './OutputText';
 
 import '../styles/Flowmap.css';
+import { dsv } from 'd3';
 
 interface Props {
   data: FlowmapData;
-  filterByIndex: (filter: (index: number) => boolean) => void;
-  showText: boolean;
+  filterByOutputIndex: (filter: (index: number) => boolean) => void;
+  filterByInputIndex: (filter: (index: number) => boolean) => void;
+  filtered: boolean;
   locked: boolean;
   lock: (lock: boolean) => void;
 }
@@ -21,14 +23,13 @@ interface State {
   inputScale: any;
   inputColorScale: any;
   outputScale: any;
+  outputColorScale: any;
   xScale: any;
   path: any;
   edgeWidthScale: any;
   edgeColorScale: any;
   edgeColorScaleCopy: any;
   edgeColorScaleGrey: any;
-  selectedInputNodes: any;
-  selectedOutputNodes: Set<number>;
 }
 
 interface Tracking {
@@ -77,14 +78,13 @@ export default class Flowmap extends React.Component<Props, State> {
       inputScale: null,
       inputColorScale: null,
       outputScale: null,
+      outputColorScale: null,      
       xScale: null,
       path: null,
       edgeWidthScale: null,
       edgeColorScale: null,
       edgeColorScaleCopy: null,
       edgeColorScaleGrey: null,
-      selectedInputNodes: null,
-      selectedOutputNodes: null
     }
 
     this.tracking = {
@@ -110,6 +110,11 @@ export default class Flowmap extends React.Component<Props, State> {
     const outputScale = d3.scaleBand()
       // @ts-ignore      
       .domain(d3.range(0, nextProps.data.outputRecords.length));
+
+    const outputWeightDomain = [0, 1 * WEIGHT_SCALE * 2]
+
+    // @ts-ignore
+    const outputColorScale =  d3.scaleSequential(d3.interpolateReds).domain(outputWeightDomain);
 
     const xScale = d3.scaleOrdinal()
       .domain(['input', 'output']);
@@ -147,32 +152,22 @@ export default class Flowmap extends React.Component<Props, State> {
     const edgeColorScaleGrey = d3.scaleSequential(d3.interpolateGreys)
       .domain([0, 1 * WEIGHT_SCALE]);
 
-    const filteredAttentionRecords = nextProps.data.attentionRecords.filter(function(record: FlowmapAttentionRecord) {
-      return edgeWidthScale(record.weight) >= 1.1;
-    });
 
-    // @ts-ignore
-    const { selectedInputNodes, selectedOutputNodes } = filteredAttentionRecords.reduce(function(sets: any, record: FlowmapAttentionRecord) {
-      if (record.selected) {
-        sets.selectedInputNodes[record.inputIndex] = nextProps.data.inputRecords[record.inputIndex].token === nextProps.data.outputRecords[record.outputIndex].token;
-        sets.selectedOutputNodes.add(record.outputIndex);
-      }
-      return sets;
-    }, { 'selectedInputNodes': {}, 'selectedOutputNodes': new Set() });
+    function attentionRecordFilter(record: FlowmapAttentionRecord) {
+      return edgeWidthScale(record.weight) >= 0.1;
+    }
 
     return {
       inputScale,
       inputColorScale,
       outputScale,
+      outputColorScale,
       xScale,
       path,
       edgeWidthScale,
       edgeColorScale,
       edgeColorScaleCopy,
       edgeColorScaleGrey,
-      filteredAttentionRecords,
-      selectedInputNodes,
-      selectedOutputNodes
     }
   }
 
@@ -184,7 +179,7 @@ export default class Flowmap extends React.Component<Props, State> {
 
     this.edges = this.chart.append('g');
     this.edges.selectAll('.edge')
-      .data(this.state.filteredAttentionRecords)
+      .data(this.props.data.attentionRecords)
       .enter()
       .append('path')
       .attr('class', (d: FlowmapAttentionRecord) => {
@@ -213,12 +208,23 @@ export default class Flowmap extends React.Component<Props, State> {
       .attr('y', (d: any) => { return this.state.inputScale(d.index)})
       .attr('width', Flowmap.inputNodeWidth)
       .attr('height', this.state.inputScale.bandwidth())
-      .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); });
+      .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); })
+      .on('mouseenter', (d: InputRecord) => {
+        if (this.props.locked) {
+        } else {        
+          // highlight a single token
+          this.props.filterByInputIndex(function(index: number) {
+            return index === d.index;
+          });
+        }
+      }).on('click', (d: OutputRecord) => {
+        this.props.lock(!this.props.locked);
+      })
 
     this.outputNodes = this.chart.append('g')
       .on('mouseleave', () => {
         if (!this.props.locked) {
-          this.props.filterByIndex(null);
+          this.props.filterByOutputIndex(null);
         }
       });
 
@@ -238,6 +244,13 @@ export default class Flowmap extends React.Component<Props, State> {
       .attr('y', (d: any) => { return this.state.outputScale(d.index)})
       .attr('width', Flowmap.outputNodeWidth)
       .attr('height', this.state.outputScale.bandwidth())
+      .attr('fill', (d: OutputRecord) => { 
+        if (d.selected && this.props.filtered) {
+          return this.state.outputColorScale(d.weight);
+        } else {
+          return '#fff';
+        }
+      })
       .on('mouseenter', (d: OutputRecord) => {
         if (this.props.locked) {
           if (this.tracking.brushing) {
@@ -245,7 +258,7 @@ export default class Flowmap extends React.Component<Props, State> {
             const delta = d.index - this.tracking.prev;
             this.tracking.anchor += delta;
             this.tracking.end += delta;
-            this.props.filterByIndex((index: number) => {
+            this.props.filterByOutputIndex((index: number) => {
               return (
                 (index >= this.tracking.anchor && index <= this.tracking.end) ||
                 (index <= this.tracking.anchor && index >= this.tracking.end)
@@ -256,7 +269,7 @@ export default class Flowmap extends React.Component<Props, State> {
         } else {
           if (this.tracking.brushing) {
             // increase brush range
-            this.props.filterByIndex((index: number) => {
+            this.props.filterByOutputIndex((index: number) => {
               return (
                 (index >= this.tracking.anchor && index <= d.index) ||
                 (index <= this.tracking.anchor && index >= d.index)
@@ -267,7 +280,7 @@ export default class Flowmap extends React.Component<Props, State> {
             this.tracking.end = d.index;
             this.tracking.prev = d.index;            
             // highlight a single token
-            this.props.filterByIndex(function(index: number) {
+            this.props.filterByOutputIndex(function(index: number) {
               return index === d.index;
             });
           }
@@ -285,7 +298,7 @@ export default class Flowmap extends React.Component<Props, State> {
           this.tracking.end = d.index;
           this.props.lock(false);
           // highlight a single token
-          this.props.filterByIndex(function(index: number) {
+          this.props.filterByOutputIndex(function(index: number) {
             return index === d.index;
           });
         } else {
@@ -312,7 +325,7 @@ export default class Flowmap extends React.Component<Props, State> {
     this.updateWidthHeight();
 
     const newEdges = this.edges.selectAll('.edge')
-      .data(this.state.filteredAttentionRecords, function(d: FlowmapAttentionRecord) {
+      .data(this.props.data.attentionRecords, function(d: FlowmapAttentionRecord) {
         return d.index;
       })
     this.edges.selectAll('.edge')
@@ -346,20 +359,27 @@ export default class Flowmap extends React.Component<Props, State> {
           'node': true,
           'output': true,
           'clickable': !this.props.locked && !this.tracking.brushing,
-          'selected': d.selected,
+          'selected': d.selected && this.props.filtered,
           'grabbable': d.selected && this.props.locked && !this.tracking.brushing,
           'grabbed': d.selected && this.props.locked && this.tracking.brushing,
           'extendable': this.tracking.brushing && !this.props.locked
         });
+      })
+      .attr('fill', (d: any) => { 
+        if (d.selected && this.props.filtered) {
+          return this.state.outputColorScale(d.weight);
+        } else {
+          return '#fff';
+        }
       });
 
     this.inputText.selectAll('.input-text').remove();      
-    if (this.props.showText) {
+    if (this.props.filtered) {
       const usedInputTextPositions = new Set();      
   
       this.inputText.selectAll('.input-text')
         .data(this.props.data.inputRecords.filter((d: InputRecord) => {
-          return typeof this.state.selectedInputNodes[d.index] !== 'undefined';
+          return d.selected
         }))
         .enter()
         .append('text')
@@ -367,7 +387,7 @@ export default class Flowmap extends React.Component<Props, State> {
           return classNames({
             'text': true,
             'input-text': true,
-            'copy': this.state.selectedInputNodes[d.index]
+            'copy': d.selected
           })
         })
         .attr('alignment-baseline', 'middle')
@@ -388,7 +408,7 @@ export default class Flowmap extends React.Component<Props, State> {
           .attr('class', (d: InputRecord) => {
             return classNames({
               'pos': true,
-              'copy': this.state.selectedInputNodes[d.index]
+              'copy': d.selected
             })
           })
           .text((d: InputRecord) => {
@@ -398,12 +418,12 @@ export default class Flowmap extends React.Component<Props, State> {
     }
     
     this.outputText.selectAll('.output-text').remove();
-    if (this.props.showText) {
+    if (this.props.filtered) {
       const usedOutputTextPositions = new Set();      
   
       this.outputText.selectAll('.output-text')
         .data(this.props.data.outputRecords.filter((d: OutputRecord) => {
-          return this.state.selectedOutputNodes.has(d.index);
+          return d.selected
         }))
         .enter()
         .append('text')

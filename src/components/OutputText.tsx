@@ -1,21 +1,28 @@
 import * as React from 'react';
 import * as classNames from 'classnames';
+import * as d3 from 'd3';
 
 import '../styles/OutputText.css';
+
+const WEIGHT_SCALE = 3;
 
 interface Props {
   data: OutputRecord[];
   filterByIndex: (filter: (index: number) => boolean) => void;
+  filtered: boolean;
+  lock: (lock: boolean) => void;
+  locked: boolean;
 }
 
 interface State {
-
+  colorScale: any;
 }
 
 export interface OutputRecord {
   index: number;
   token: string;
   pos: string;
+  weight?: number;
   selected?: boolean;
 }
 
@@ -34,6 +41,22 @@ export default class OutputText extends React.Component<Props, State> {
       anchor: -1,
       brushing: false
     }
+
+    this.state = {
+      colorScale: null
+    }
+
+    this.forceUpdate = this.forceUpdate.bind(this);
+  }
+
+  static getDerivedStateFromProps(nextProps: Props, prevState: State) {
+    const weightDomain = [0, WEIGHT_SCALE * 1];
+    // @ts-ignore
+    const colorScale = d3.scaleSequential(d3.interpolateReds).domain(weightDomain);
+
+    return {
+      colorScale
+    }
   }
 
   render() {
@@ -43,38 +66,57 @@ export default class OutputText extends React.Component<Props, State> {
     const text = this.props.data.map((record: OutputRecord, i: number) => {
       const token = record.token;
       
-      const classes  = classNames({
-        token: true,
-        selected: record.selected
+      let backgroundColor;
+      if (this.props.filtered && record.selected) {
+        backgroundColor = this.state.colorScale(record.weight);
+      } else {
+        backgroundColor = '#fff';
+      }
+
+      const classes = classNames({
+        'token': true, 'selected': !this.props.filtered || record.selected
       });
 
       return (
-        <span className={classes} key={i}
+        <span className={classes} key={i} style={{ backgroundColor }}
 
-          onMouseEnter={function(event: any) {
-            if (tracking.brushing) {
-              // increase brush range
-              filterByIndex(function(index: number) {
-                return (
-                  (index >= tracking.anchor && index <= i) ||
-                  (index <= tracking.anchor && index >= i)
-                );
-              });
+          onMouseEnter={(event: any) => {
+            if (!this.props.locked) {
+              if (tracking.brushing) {
+                // increase brush range
+                filterByIndex(function(index: number) {
+                  return (
+                    (index >= tracking.anchor && index <= i) ||
+                    (index <= tracking.anchor && index >= i)
+                  );
+                });
+              } else {
+                // highlight a single token
+                filterByIndex(function(index: number) {
+                  return index === i;
+                });
+              }
+            }
+          }}
+
+          onMouseDown={(event: any) => {
+            tracking.anchor = i;            
+            if (!this.props.locked) {
+              tracking.brushing = true;
             } else {
-              // highlight a single token
-              filterByIndex(function(index: number) {
+              this.props.lock(false);
+              this.props.filterByIndex(function(index: number) {
                 return index === i;
               });
             }
           }}
 
-          onMouseDown={function(event: any) {
-            tracking.anchor = i;
-            tracking.brushing = true;
-          }}
-
-          onMouseUp={function(event: any) {
-            tracking.brushing = false;
+          onMouseUp={(event: any) => {
+            const wasBrushing = this.tracking.brushing;
+            tracking.brushing = false;            
+            if (!this.props.locked && wasBrushing) {
+              this.props.lock(true);              
+            }
           }}
         >
           {`${token} `}
@@ -85,8 +127,10 @@ export default class OutputText extends React.Component<Props, State> {
     return (
       <div className="OutputText" 
       
-      onMouseOut={function() {
-        filterByIndex(null);
+      onMouseOut={() => {
+        if (!this.props.locked) {
+          filterByIndex(null);
+        }
       }}>
         <div className="text">
           {text}

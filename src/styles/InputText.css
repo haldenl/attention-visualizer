@@ -2,5 +2,13 @@
   position: relative;
   height: 100%; }
   .InputText .text {
+    cursor: default;
     padding: 8px 128px 8px 8px;
-    overflow: auto; }
+    overflow: auto;
+    line-height: 1.5; }
+    .InputText .text .token {
+      opacity: 1;
+      margin: 4px 0 4px 0;
+      border-bottom: 2px solid transparent; }
+      .InputText .text .token.selected {
+        border-bottom: 2px solid #000; }

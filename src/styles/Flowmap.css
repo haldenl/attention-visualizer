@@ -10,10 +10,8 @@
       opacity: 0.02; }
   .Flowmap .node.output {
     stroke-width: 1px;
-    stroke: #e9e9e9;
-    fill: #fff; }
+    stroke: #e9e9e9; }
     .Flowmap .node.output.selected {
-      fill: #ffa6a6;
       stroke: transparent; }
     .Flowmap .node.output.grabbable {
       cursor: grab;

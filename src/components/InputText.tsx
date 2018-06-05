@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as d3 from 'd3';
+import * as classNames from 'classnames';
 
 import Minimap from 'react-minimap';
 import { TextRecord } from './AttentionVisualizer';
@@ -11,6 +12,10 @@ import '../styles/Minimap.css';
 interface Props {
   data: InputRecord[];
   showMinimap: boolean;
+  filterByIndex: (filter: (index: number) => boolean) => void;
+  filtered: boolean;
+  lock: (lock: boolean) => void;
+  locked: boolean;
 }
 
 interface State {
@@ -22,6 +27,7 @@ export interface InputRecord {
   token: string;
   pos: string;
   weight: number;
+  selected?: boolean;
 }
 
 export const WEIGHT_SCALE = 1.5;
@@ -46,12 +52,27 @@ export default class InputText extends React.Component<Props, State> {
   }
 
   render() {
+    const filterByIndex = this.props.filterByIndex;
+    const locked = this.props.locked;
+    const lock = this.props.lock;
+
     const text = this.props.data.map((record: InputRecord, i: number) => {
       const token = record.token;
       const backgroundColor = this.state.colorScale(record.weight);
+      const classes = classNames({
+        'token': true, 'selected': this.props.filtered && record.selected
+      });
 
       return (
-        <span className="token" key={i} style={{ backgroundColor }}>
+        <span className={classes} key={i} style={{ backgroundColor }}
+          
+          onMouseEnter={function(event: any) {
+            if (!locked) {
+              filterByIndex(function(index: number) {
+                return index === i;
+              });
+            }
+          }}>
           {`${token} `}
         </span>
       );
@@ -59,7 +80,13 @@ export default class InputText extends React.Component<Props, State> {
 
     if (this.props.showMinimap) {
       return (
-        <div className="InputText">
+        <div className="InputText" 
+
+        onMouseOut={function() {
+          if (!locked) {
+            filterByIndex(null);
+          }
+        }}>
           <Minimap selector=".token" childComponent={MinimapChild} width={100} keepAspectRatio={true}>
             <div className="text">
               {text}
@@ -69,7 +96,13 @@ export default class InputText extends React.Component<Props, State> {
       )
     } else {
       return (
-        <div className="InputText">
+        <div className="InputText"
+        
+        onMouseOut={function() {
+          if (!locked) {
+            filterByIndex(null);
+          }
+        }}>
           <div className="text">
             {text}
           </div>
