@@ -9,7 +9,7 @@
   .edge {
     fill: none;
     // stroke: $dark-red;    
-    opacity: 0.25;
+    opacity: 0.5;
 
     &.copy {
       // stroke: #bdbdf0;
@@ -20,11 +20,54 @@
     &.output {
       stroke-width: 1px;
       stroke: $light-grey;
-      fill: transparent;
+      fill: #fff;
 
       &.selected {
         fill: $light-red;
         stroke: transparent;
+      }
+
+      &.grabbable {
+        cursor: grab;
+        cursor: -webkit-grab;
+      }
+
+      &.grabbed {
+        cursor: grabbing;
+        cursor: -webkit-grabbing;
+      }
+
+      &.clickable {
+        cursor: pointer;
+      }
+
+      &.cancel {
+        cursor: no-drop;
+      }
+
+      &.extendable {
+        cursor: ns-resize;
+      }
+    }
+  }
+
+  .text {
+    font-size: 10px;
+    font-weight: 400;
+    user-select: none;
+
+    &.copy {
+      fill: $medium-grey
+    }
+
+    .pos {
+      font-weight: 300;
+      font-family: 'Roboto', serif;
+      font-style: italic;
+      fill: $medium-grey;
+
+      &.copy {
+        fill: $light-grey;
       }
     }
   }

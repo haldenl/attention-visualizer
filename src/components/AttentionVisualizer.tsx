@@ -35,6 +35,8 @@ interface State {
   outputData: OutputRecord[];
   flowmapData: FlowmapData;
   resizing: boolean;
+  filtered: boolean;
+  locked: boolean;
 }
 
 export default class AttentionVisualizer extends React.Component<Props, State> {
@@ -54,10 +56,13 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       inputData: inputData,
       outputData: this.props.data.outputTokens,
       flowmapData: flowmapData,
-      resizing: false
+      resizing: false,
+      filtered: false,
+      locked: false
     };
 
     this.filterByOutputIndex = this.filterByOutputIndex.bind(this);
+    this.lock = this.lock.bind(this);
     this.setState = this.setState.bind(this);
   }
 
@@ -80,7 +85,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
           onDragFinished={function() { setState({ resizing: false }); }}
         >
           {this.state.resizing ? null :
-            <Flowmap data={this.state.flowmapData} filterByIndex={this.filterByOutputIndex} />
+            <Flowmap data={this.state.flowmapData} showText={this.state.filtered}
+              filterByIndex={this.filterByOutputIndex} lock={this.lock} locked={this.state.locked}/>
           }
           <OutputText data={this.state.outputData} filterByIndex={this.filterByOutputIndex} />
         </SplitPane>
@@ -168,7 +174,14 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     this.setState({
       inputData,
       outputData,
-      flowmapData
+      flowmapData,
+      filtered: !!filter
+    });
+  }
+
+  private lock(lock: boolean) {
+    this.setState({
+      locked: lock
     });
   }
 }

@@ -5,11 +5,36 @@
   padding: 0; }
   .Flowmap .edge {
     fill: none;
-    opacity: 0.25; }
+    opacity: 0.5; }
   .Flowmap .node.output {
     stroke-width: 1px;
     stroke: #e9e9e9;
-    fill: transparent; }
+    fill: #fff; }
     .Flowmap .node.output.selected {
       fill: #ffa6a6;
       stroke: transparent; }
+    .Flowmap .node.output.grabbable {
+      cursor: grab;
+      cursor: -webkit-grab; }
+    .Flowmap .node.output.grabbed {
+      cursor: grabbing;
+      cursor: -webkit-grabbing; }
+    .Flowmap .node.output.clickable {
+      cursor: pointer; }
+    .Flowmap .node.output.cancel {
+      cursor: no-drop; }
+    .Flowmap .node.output.extendable {
+      cursor: ns-resize; }
+  .Flowmap .text {
+    font-size: 10px;
+    font-weight: 400;
+    user-select: none; }
+    .Flowmap .text.copy {
+      fill: #afafaf; }
+    .Flowmap .text .pos {
+      font-weight: 300;
+      font-family: 'Roboto', serif;
+      font-style: italic;
+      fill: #afafaf; }
+      .Flowmap .text .pos.copy {
+        fill: #e9e9e9; }
