@@ -24,7 +24,7 @@
     .Flowmap .node.output.cancel {
       cursor: no-drop; }
     .Flowmap .node.output.extendable {
-      cursor: ns-resize; }
+      cursor: ns-resize !important; }
   .Flowmap .text {
     font-size: 10px;
     font-weight: 400;

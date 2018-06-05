@@ -243,8 +243,8 @@ export default class Flowmap extends React.Component<Props, State> {
                 (index <= this.tracking.anchor && index >= this.tracking.end)
               );
             });
-            this.tracking.prev = d.index;
           }
+          this.tracking.prev = d.index;
         } else {
           if (this.tracking.brushing) {
             // increase brush range
@@ -280,13 +280,19 @@ export default class Flowmap extends React.Component<Props, State> {
           this.props.filterByIndex(function(index: number) {
             return index === d.index;
           });
+        } else {
+          this.forceUpdate();
         }
       }).on('mouseup', (d: OutputRecord) => {
         const wasBrushing = this.tracking.brushing;
-        this.tracking.brushing = false;
-        this.tracking.end = d.index;
-        if (d.selected && wasBrushing) {
-          this.props.lock(true);
+        this.tracking.brushing = false;        
+        if (this.props.locked) {
+          this.forceUpdate();
+        } else {
+          this.tracking.end = d.index;
+          if (d.selected && wasBrushing) {
+            this.props.lock(true);
+          }
         }
       });
 
