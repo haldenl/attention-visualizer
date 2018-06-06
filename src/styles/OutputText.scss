@@ -1,17 +1,27 @@
 @import 'base.scss';
 
 .OutputText {
-  .text {
-    padding: 8px;
-    cursor: default;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 24px - 400px);  // height of title, max height of control panel
 
-    .token {
-      &.selected {
-        background-color: $light-red;
-      }
-
-      &::selection {
-        background: transparent;
+  .content {
+    .text {
+      padding: 8px;
+      // cursor: default;
+      overflow: auto;
+  
+      .token {
+        &.selected {
+          background-color: $light-red;
+        }
+  
+        &::selection {
+          background: transparent;
+        }
       }
     }
   }

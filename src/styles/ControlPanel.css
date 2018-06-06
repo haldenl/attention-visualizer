@@ -1,0 +1,40 @@
+.ControlPanel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: 'Roboto', sans-serif;
+  color: #afafaf;
+  display: flex;
+  flex-shrink: 0;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  user-select: auto; }
+  .ControlPanel .guide {
+    height: 100%;
+    width: calc(100% - 64px);
+    padding: 0 32px 0 32px;
+    user-select: none;
+    text-align: center; }
+    .ControlPanel .guide .locks {
+      opacity: 0.5;
+      margin-bottom: 16px; }
+    .ControlPanel .guide .instructions {
+      text-align: start;
+      padding: 0; }
+      .ControlPanel .guide .instructions .instruction {
+        margin: 4px 0 4px 0; }
+        .ControlPanel .guide .instructions .instruction .bold {
+          font-weight: 700;
+          color: #afafaf; }
+        .ControlPanel .guide .instructions .instruction .underline {
+          border-bottom: 1px solid #afafaf; }
+    .ControlPanel .guide .legend-clickable {
+      margin: 4px 0 0 0;
+      padding: 4px 0 4px 0;
+      cursor: pointer;
+      border: 1px solid #e9e9e9;
+      border-radius: 4px; }
+      .ControlPanel .guide .legend-clickable:hover {
+        border: 1px solid #afafaf; }

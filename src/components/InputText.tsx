@@ -72,6 +72,11 @@ export default class InputText extends React.Component<Props, State> {
                 return index === i;
               });
             }
+          }}
+          
+          onClick={function(event: any) {
+            lock(!locked);
+            event.stopPropagation();
           }}>
           {`${token} `}
         </span>
@@ -81,12 +86,17 @@ export default class InputText extends React.Component<Props, State> {
     if (this.props.showMinimap) {
       return (
         <div className="InputText" 
-
-        onMouseOut={function() {
-          if (!locked) {
+          onMouseOut={function() {
+            if (!locked) {
+              filterByIndex(null);
+            }
+          }}
+          
+          onClick={function() {
             filterByIndex(null);
-          }
-        }}>
+            lock(false);
+          }}
+        >
           <Minimap selector=".token" childComponent={MinimapChild} width={100} keepAspectRatio={true}>
             <div className="text">
               {text}

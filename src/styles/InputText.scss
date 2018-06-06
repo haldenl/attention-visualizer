@@ -2,7 +2,10 @@
 
 .InputText {
   position: relative;
+  width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 
   .text {
     cursor: default;    
@@ -14,6 +17,10 @@
       opacity: 1;
       margin: 4px 0 4px 0;
       border-bottom: 2px solid transparent;
+
+      &::selection {
+        background: transparent;
+      }
 
       &.selected {
         border-bottom: 2px solid #000;

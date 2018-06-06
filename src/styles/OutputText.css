@@ -1,7 +1,14 @@
-.OutputText .text {
-  padding: 8px;
-  cursor: default; }
-  .OutputText .text .token.selected {
-    background-color: #ffa6a6; }
-  .OutputText .text .token::selection {
-    background: transparent; }
+.OutputText {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 24px - 400px); }
+  .OutputText .content .text {
+    padding: 8px;
+    overflow: auto; }
+    .OutputText .content .text .token.selected {
+      background-color: #ffa6a6; }
+    .OutputText .content .text .token::selection {
+      background: transparent; }

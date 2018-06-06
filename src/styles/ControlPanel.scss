@@ -1,0 +1,60 @@
+@import 'base.scss';
+
+.ControlPanel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: 'Roboto', sans-serif;
+  color: $medium-grey;
+  display: flex;
+  flex-shrink: 0;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  user-select: auto;
+
+  .guide {
+    height: 100%;
+    width: calc(100% - 64px);
+    padding: 0 32px 0 32px;
+    user-select: none;
+    text-align: center;
+
+    .locks {
+      opacity: 0.5;
+      margin-bottom: 16px;
+    }
+
+    .instructions {
+      text-align: start;
+      padding: 0;
+
+      .instruction {
+        margin: 4px 0 4px 0;
+
+        .bold {
+          font-weight: 700;
+          color: $medium-grey;
+
+        }
+        
+        .underline {
+          border-bottom: 1px solid $medium-grey;
+        }
+      }
+    }
+
+    .legend-clickable {
+      margin: 4px 0 0 0;
+      padding: 4px 0 4px 0;
+      cursor: pointer;
+      border: 1px solid $light-grey;
+      border-radius: 4px;
+
+      &:hover {
+        border: 1px solid $medium-grey;
+      }
+    }
+  }
+}

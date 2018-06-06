@@ -100,9 +100,9 @@ export default class OutputText extends React.Component<Props, State> {
           }}
 
           onMouseDown={(event: any) => {
-            tracking.anchor = i;            
+            tracking.anchor = i;           
+            tracking.brushing = true;             
             if (!this.props.locked) {
-              tracking.brushing = true;
             } else {
               this.props.lock(false);
               this.props.filterByIndex(function(index: number) {
@@ -131,9 +131,12 @@ export default class OutputText extends React.Component<Props, State> {
         if (!this.props.locked) {
           filterByIndex(null);
         }
-      }}>
-        <div className="text">
-          {text}
+      }}
+      >
+        <div className="content">
+          <div className="text">
+            {text}
+          </div>
         </div>
       </div>
     )

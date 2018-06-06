@@ -1,4 +1,5 @@
 .Resizer {
+  background: #8b8b8b;
   opacity: .2;
   z-index: 1;
   -moz-box-sizing: border-box;
