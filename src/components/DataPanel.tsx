@@ -98,21 +98,23 @@ export default class ControlPanel extends React.Component<Props, State> {
                           <a className="url" href={d.url} target="_blank">
                             {d.url}
                           </a>
-                          {
-                            d.name === 'DEMO' ? null :
-                              <button className="remove" onClick={() => {
-                                this.state.dataSources.splice(i, 1);
-                                localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.dataSources));
-                                this.setState({ dataSources: this.state.dataSources });
-                              }}>
-                                delete
+                          <div className="actions">
+                            {
+                              d.name === 'DEMO' ? null :
+                                <button className="remove" onClick={() => {
+                                  this.state.dataSources.splice(i, 1);
+                                  localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.dataSources));
+                                  this.setState({ dataSources: this.state.dataSources });
+                                }}>
+                                  delete
+                              </button>
+                            }
+                            <button className="load" onClick={() => {
+                              this.props.setDataSource(d);
+                            }}>
+                              load
                             </button>
-                          }
-                          <button className="load" onClick={() => {
-                            this.props.setDataSource(d);
-                          }}>
-                            load
-                          </button>
+                          </div>
                         </div>
                       </li>
                     );

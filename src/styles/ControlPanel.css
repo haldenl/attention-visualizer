@@ -17,13 +17,18 @@
     width: calc(100% - 64px);
     padding: 0 32px 0 32px;
     user-select: none;
-    text-align: center; }
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; }
     .ControlPanel .guide .locks {
       opacity: 0.5;
       margin-bottom: 16px; }
     .ControlPanel .guide .instructions {
       text-align: start;
-      padding: 0; }
+      padding: 0;
+      max-width: 400px; }
       .ControlPanel .guide .instructions .instruction {
         margin: 4px 0 4px 0; }
         .ControlPanel .guide .instructions .instruction .bold {
@@ -34,6 +39,7 @@
     .ControlPanel .guide .legend-clickable {
       margin: 4px 0 0 0;
       padding: 4px 0 4px 0;
+      width: 300px;
       cursor: pointer;
       border: 1px solid #e9e9e9;
       border-radius: 4px; }

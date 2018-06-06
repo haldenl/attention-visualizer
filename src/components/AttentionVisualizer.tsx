@@ -77,7 +77,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
 
     return (
       <div className="AttentionVisualizer">
-        <SplitPane defaultSize={400}
+        <SplitPane defaultSize={400} minSize={320}
           onDragStarted={function () { setState({ resizing: true }); }}
           onDragFinished={function () { setState({ resizing: false }); }}
         >
@@ -95,7 +95,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
               }
             </div>
           </div>
-          <SplitPane primary="second" defaultSize={400}
+          <SplitPane primary="second" defaultSize={400} minSize={320}
             onDragStarted={function () { setState({ resizing: true }); }}
             onDragFinished={function () { setState({ resizing: false }); }}
           >

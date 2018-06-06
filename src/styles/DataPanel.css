@@ -66,7 +66,8 @@
         .DataPanel .insides .info .data-sources .data-source {
           display: flex;
           flex-direction: row;
-          align-items: center; }
+          align-items: center;
+          justify-content: space-between; }
           .DataPanel .insides .info .data-sources .data-source .name {
             font-weight: 700;
             padding-right: 8px; }
@@ -75,22 +76,25 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             color: #afafaf; }
-          .DataPanel .insides .info .data-sources .data-source .remove {
-            padding: 4px 8px 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #ffa6a6;
-            margin: 0 4px 0 4px;
-            color: #afafaf; }
-            .DataPanel .insides .info .data-sources .data-source .remove:hover {
-              border: 1px solid #c41e1e; }
-          .DataPanel .insides .info .data-sources .data-source .load {
-            padding: 4px 8px 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #6fb5ff;
-            margin: 0 4px 0 4px;
-            color: #afafaf; }
-            .DataPanel .insides .info .data-sources .data-source .load:hover {
-              border: 1px solid #256ab3; }
+          .DataPanel .insides .info .data-sources .data-source .actions {
+            display: flex;
+            flex-direction: row; }
+            .DataPanel .insides .info .data-sources .data-source .actions .remove {
+              padding: 4px 8px 4px 8px;
+              border-radius: 4px;
+              border: 1px solid #ffa6a6;
+              margin: 0 4px 0 4px;
+              color: #afafaf; }
+              .DataPanel .insides .info .data-sources .data-source .actions .remove:hover {
+                border: 1px solid #c41e1e; }
+            .DataPanel .insides .info .data-sources .data-source .actions .load {
+              padding: 4px 8px 4px 8px;
+              border-radius: 4px;
+              border: 1px solid #6fb5ff;
+              margin: 0 4px 0 4px;
+              color: #afafaf; }
+              .DataPanel .insides .info .data-sources .data-source .actions .load:hover {
+                border: 1px solid #256ab3; }
       .DataPanel .insides .info .controls {
         width: 100%;
         height: 120px;
