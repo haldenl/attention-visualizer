@@ -5,6 +5,7 @@
   font-family: 'Roboto', sans-serif;
   color: #afafaf;
   display: flex;
+  flex-direction: column;
   flex-shrink: 0;
   flex-grow: 1;
   justify-content: center;

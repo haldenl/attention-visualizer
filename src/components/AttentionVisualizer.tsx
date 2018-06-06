@@ -6,9 +6,13 @@ import InputText, { InputRecord } from './InputText';
 import OutputText, { OutputRecord } from './OutputText';
 import Flowmap, { FlowmapData, FlowmapAttentionRecord } from './Flowmap';
 import ControlPanel from './ControlPanel';
+import DataPanel, { DataRecord } from './DataPanel';
+import Loading from './Loading';
 
 import '../styles/AttentionVisualizer.css';
 import '../styles/Resizer.css';
+
+const DATA_URL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_3.json';
 
 export interface AttentionRecord {
   inputIndex: number;
@@ -29,58 +33,52 @@ export interface AttentionData {
 }
 
 interface Props {
-  data: AttentionData;
 }
 
 interface State {
-  inputData: InputRecord[];
-  outputData: OutputRecord[];
-  flowmapData: FlowmapData;
+  inputData: InputRecord[] | null;
+  outputData: OutputRecord[] | null;
+  flowmapData: FlowmapData | null;
   resizing: boolean;
   filtered: boolean;
   locked: boolean;
   minAttnWeight: number;
+  dataRecord: DataRecord;
 }
 
 const DEFAULT_MIN_ATTENTION_WEIGHT = 0.05;
 
 export default class AttentionVisualizer extends React.Component<Props, State> {
+  data: AttentionData;
+
   constructor(props: Props) {
     super(props);
 
-    const inputData = AttentionVisualizer.getInputData(this.props.data);
-    const outputData = AttentionVisualizer.getOutputData(this.props.data);
-    const flowmapAttentionData = AttentionVisualizer.getFlowmapAttentionData(this.props.data, DEFAULT_MIN_ATTENTION_WEIGHT);
-
-    const flowmapData = {
-      inputRecords: inputData,
-      outputRecords: this.props.data.outputTokens,
-      attentionRecords: flowmapAttentionData
-    }
-
-    this.state = {
-      inputData: inputData,
-      outputData: outputData,
-      flowmapData: flowmapData,
-      resizing: false,
-      filtered: false,
-      locked: false,
-      minAttnWeight: DEFAULT_MIN_ATTENTION_WEIGHT
-    };
+    this.data = null;
+    this.state = this.getStateFromData(null, null);
 
     this.filterByOutputIndex = this.filterByOutputIndex.bind(this);
     this.filterByInputIndex = this.filterByInputIndex.bind(this);
     this.filterByEdgeTokenMatch = this.filterByEdgeTokenMatch.bind(this);
     this.lock = this.lock.bind(this);
     this.setState = this.setState.bind(this);
+    this.setDataSource = this.setDataSource.bind(this);
+  }
+
+  componentDidMount() {
+    let dataRecord: DataRecord = DataPanel.retrieveFirstDataSource();
+
+    if (dataRecord == null) {
+      dataRecord = { 'name': 'DEMO', 'url': DATA_URL };
+    }
+    d3.json(dataRecord.url).then((data: AttentionData) => {
+      this.data = data;
+      this.setState( this.getStateFromData(data, dataRecord) );
+    });
   }
 
   render() {
     const setState = this.setState;
-
-    if (this.props.data === null) {
-      return null;
-    }
 
     return (
       <div className="AttentionVisualizer">
@@ -94,16 +92,19 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
               input
             </div>
             <div className="input-pane">
-              <InputText data={this.state.inputData} filterByIndex={this.filterByInputIndex}
-                showMinimap={!this.state.resizing} filtered={this.state.filtered} lock={this.lock}
-                locked={this.state.locked} />
+              {this.state.inputData !== null ?
+                <InputText data={this.state.inputData} filterByIndex={this.filterByInputIndex}
+                  showMinimap={!this.state.resizing} filtered={this.state.filtered} lock={this.lock}
+                  locked={this.state.locked} /> :
+                <Loading />
+              }
             </div>
           </div>
           <SplitPane primary="second" defaultSize={400}
             onDragStarted={function () { setState({ resizing: true }); }}
             onDragFinished={function () { setState({ resizing: false }); }}
           >
-            {this.state.resizing ? null :
+            {this.state.resizing ? null : this.state.flowmapData === null ? <Loading /> :
               <Flowmap data={this.state.flowmapData} filtered={this.state.filtered}
                 filterByOutputIndex={this.filterByOutputIndex} filterByInputIndex={this.filterByInputIndex}
                 lock={this.lock} locked={this.state.locked} />
@@ -113,8 +114,10 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
                 output
               </div>
               <div className="output-pane">
-                <OutputText data={this.state.outputData} filterByIndex={this.filterByOutputIndex} filtered={this.state.filtered}
-                  lock={this.lock} locked={this.state.locked} />
+                { this.state.outputData === null ? <Loading /> : 
+                  <OutputText data={this.state.outputData} filterByIndex={this.filterByOutputIndex} filtered={this.state.filtered}
+                    lock={this.lock} locked={this.state.locked} />
+                }
               </div>
               <div className="control-pane" 
                 onClick={() => {
@@ -127,6 +130,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
                   filterByOutputIndex={this.filterByOutputIndex}
                   filterByEdgeTokenMatch={this.filterByEdgeTokenMatch} />
               </div>
+              <DataPanel currentDataSource={this.state.dataRecord} lock={this.lock} setDataSource={this.setDataSource} />
             </div>
           </SplitPane>
         </SplitPane>
@@ -230,13 +234,13 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       }
     }
 
-    const inputData = AttentionVisualizer.getInputData(this.props.data, outputFilter);
-    const outputData = AttentionVisualizer.getOutputData(this.props.data);
+    const inputData = AttentionVisualizer.getInputData(this.data, outputFilter);
+    const outputData = AttentionVisualizer.getOutputData(this.data);
     outputData.forEach(function (d: OutputRecord) {
       d.selected = filter ? filter(d.index) : false;
     });
     const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(
-      this.props.data, this.state.minAttnWeight, outputFilter);
+      this.data, this.state.minAttnWeight, outputFilter);
 
     attentionRecords.forEach(function (d: FlowmapAttentionRecord) {
       if (d.selected) {
@@ -267,12 +271,12 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       }
     }
 
-    const inputData: InputRecord[] = AttentionVisualizer.getInputData(this.props.data, null)
+    const inputData: InputRecord[] = AttentionVisualizer.getInputData(this.data, null)
     inputData.forEach(function (d: InputRecord) {
       d.selected = filter ? filter(d.index) : false;
     });
-    const outputData = AttentionVisualizer.getOutputData(this.props.data, inputFilter);
-    const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(this.props.data, this.state.minAttnWeight, inputFilter);
+    const outputData = AttentionVisualizer.getOutputData(this.data, inputFilter);
+    const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(this.data, this.state.minAttnWeight, inputFilter);
 
     attentionRecords.forEach(function (d: FlowmapAttentionRecord) {
       if (d.selected) {
@@ -296,14 +300,14 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
   }
 
   private filterByEdgeTokenMatch(match: boolean) {
-    const inputData: InputRecord[] = AttentionVisualizer.getInputData(this.props.data, null);
-    const outputData = AttentionVisualizer.getOutputData(this.props.data, null);
+    const inputData: InputRecord[] = AttentionVisualizer.getInputData(this.data, null);
+    const outputData = AttentionVisualizer.getOutputData(this.data, null);
 
     function edgeFilter(d: AttentionRecord) {
       return (inputData[d.inputIndex].token === outputData[d.outputIndex].token) === match;
     }
 
-    const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(this.props.data, this.state.minAttnWeight, edgeFilter);
+    const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(this.data, this.state.minAttnWeight, edgeFilter);
 
     attentionRecords.forEach(function (d: FlowmapAttentionRecord) {
       if (d.selected) {
@@ -330,5 +334,51 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     this.setState({
       locked: lock
     });
+  }
+
+  private setDataSource(dataRecord: DataRecord) {
+    this.setState(this.getStateFromData(null, dataRecord));
+    d3.json(dataRecord.url).then((data: AttentionData) => {
+      this.data = data;
+      this.setState(this.getStateFromData(data, dataRecord));
+    });
+  }
+
+  private getStateFromData(data: AttentionData, dataRecord: DataRecord) {
+    let inputData = null;
+    let outputData = null;
+    let flowmapAttentionData = null;
+    let flowmapData = null;
+
+    if (data !== null) {
+      inputData = AttentionVisualizer.getInputData(data);
+      outputData = AttentionVisualizer.getOutputData(data);
+      flowmapAttentionData = AttentionVisualizer.getFlowmapAttentionData(data, DEFAULT_MIN_ATTENTION_WEIGHT);
+  
+      flowmapData = {
+        inputRecords: inputData,
+        outputRecords: outputData,
+        attentionRecords: flowmapAttentionData
+      }
+    }
+
+
+    const newState = {
+      // @ts-ignore
+      inputData: inputData,
+
+      // @ts-ignore
+      outputData: outputData,
+
+      // @ts-ignore
+      flowmapData: flowmapData,
+      resizing: false,
+      filtered: false,
+      locked: false,
+      minAttnWeight: DEFAULT_MIN_ATTENTION_WEIGHT,
+      dataRecord: dataRecord
+    };
+
+    return newState;
   }
 }

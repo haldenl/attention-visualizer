@@ -46,7 +46,7 @@ export default class ControlPanel extends React.Component<Props, State> {
           }}>
             <span style={{ fontWeight: 400, color: 'rgb(59, 136, 190)' }}>
               blue
-                </span> edges represent same-word attention.
+                </span> edges encode same-word attention.
               </div>
           <div className="legend-clickable" onClick={(e: any) => {
             this.props.lock(false);
@@ -57,7 +57,7 @@ export default class ControlPanel extends React.Component<Props, State> {
           >
             <span style={{ fontWeight: 400, color: 'rgb(250, 160, 133)' }}>
               orange
-                </span> edges represent different-word attention.
+                </span> edges encode different-word attention.
               </div>
           <br />
           {this.props.locked ?

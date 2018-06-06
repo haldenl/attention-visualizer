@@ -18,8 +18,11 @@ html, body {
 button {
   border: none;
   font-size: inherit;
+  font-weight: inherit;
   font-family: inherit;
-  background: none; }
+  color: inherit;
+  background: none;
+  cursor: pointer; }
 
 button:focus {
   outline: 0; }
