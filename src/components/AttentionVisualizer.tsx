@@ -12,8 +12,6 @@ import Loading from './Loading';
 import '../styles/AttentionVisualizer.css';
 import '../styles/Resizer.css';
 
-const DATA_URL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_3.json';
-
 export interface AttentionRecord {
   inputIndex: number;
   outputIndex: number;
@@ -68,9 +66,6 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
   componentDidMount() {
     let dataRecord: DataRecord = DataPanel.retrieveFirstDataSource();
 
-    if (dataRecord == null) {
-      dataRecord = { 'name': 'DEMO', 'url': DATA_URL };
-    }
     d3.json(dataRecord.url).then((data: AttentionData) => {
       this.data = data;
       this.setState( this.getStateFromData(data, dataRecord) );
