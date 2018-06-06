@@ -12,7 +12,9 @@
     "start-js": "webpack-dev-server --mode development --config webpack.dev.js --port 4000 --open",
     "build-js": "webpack --mode production --config webpack.prod.js",
     "start": "npm-run-all -p watch-css start-js",
-    "build": "npm-run-all build-css build-js"
+    "build": "npm-run-all build-css build-js",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "classnames": "^2.2.5",
@@ -28,6 +30,7 @@
     "@types/react": "^16.3.16",
     "@types/react-dom": "^16.0.5",
     "css-loader": "^0.28.11",
+    "gh-pages": "^1.2.0",
     "html-webpack-plugin": "^3.2.0",
     "node-sass-chokidar": "^1.3.0",
     "npm-run-all": "^4.1.3",

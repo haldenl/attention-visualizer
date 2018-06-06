@@ -120,25 +120,26 @@ export default class Flowmap extends React.Component<Props, State> {
     const xScale = d3.scaleOrdinal()
       .domain(['input', 'output']);
 
-    const line = d3.line();
     const path = (d: any) => {
       // @ts-ignore
-      return line(xScale.domain().map(function(sequence: string) {
-        let x;
-        let y;
-        if (sequence === 'input') {
-          // @ts-ignore
-          x = xScale(sequence) + Flowmap.inputNodeWidth / 2;
-          y = inputScale(d.inputIndex) + (inputScale.bandwidth() / 2);
-        } else if (sequence === 'output') {
-          // @ts-ignore
-          x = xScale(sequence) + Flowmap.outputNodeWidth / 2;
-          y = outputScale(d.outputIndex) + (outputScale.bandwidth() / 2);
-        }
+      const source: any = {};
+
+      // @ts-ignore
+      source.x = xScale('input') + Flowmap.inputNodeWidth / 2;
+      source.y = inputScale(d.inputIndex) + (inputScale.bandwidth() / 2);
+
+      const dest: any = {};
+
+      // @ts-ignore
+      dest.x = xScale('output') + Flowmap.outputNodeWidth / 2;
+      dest.y = outputScale(d.outputIndex) + (outputScale.bandwidth() / 2);
         
-        return [x, y];
-      }));
-    }
+      return "M" + source.x + "," + source.y
+              + "C" + (dest.x - source.x) * 0.4 + "," + source.y
+              + " " + (dest.x - source.x) * 0.6 + "," + dest.y
+              + " " + dest.x + "," + dest.y;
+
+    };
 
     const edgeWidthScale = d3.scaleLinear()
       .range([0, Flowmap.maxEdgeWidth])
