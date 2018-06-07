@@ -20,6 +20,7 @@ interface State {
   bounce: boolean;
   addingSource: boolean;
   dataSources: DataRecord[];
+  dataIndex: number;
 }
 
 const STORAGE_KEY = 'attention-visualization-data-sources';
@@ -49,18 +50,24 @@ export default class ControlPanel extends React.Component<Props, State> {
       full: false,
       bounce: false,
       addingSource: false,
-      dataSources: []
+      dataSources: [],
+      dataIndex: 0
     }
   }
 
   componentDidMount() {
-    const dataSources = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const storage = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const dataSources = storage ? storage.dataSources : null;
+    const dataIndex = storage ? storage.index : 0;
+
     if (dataSources && dataSources.length > 0) {
-      this.setState({ dataSources });
+      this.setState({ dataSources, dataIndex: 0 });
     } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMOS));
+      console.log('setting demos');
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ index: 0, dataSources: DEMOS }));
       this.setState({
-        dataSources: DEMOS
+        dataSources: DEMOS,
+        dataIndex: 0
       });
     }
   }
@@ -122,13 +129,26 @@ export default class ControlPanel extends React.Component<Props, State> {
                                 d.name === 'DEMO' ? null :
                                   <button className="remove" onClick={() => {
                                     this.state.dataSources.splice(i, 1);
-                                    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.dataSources));
-                                    this.setState({ dataSources: this.state.dataSources });
+                                    const storage = { index: this.state.dataIndex, dataSources: this.state.dataSources};
+                                    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
+                                    this.setState({
+                                      dataSources: this.state.dataSources,
+                                      dataIndex: this.state.dataIndex > i ? this.state.dataIndex - 1 : this.state.dataIndex
+                                    });
                                   }}>
                                     delete
                               </button>
                               }
                               <button className="load" onClick={() => {
+                                this.setState({
+                                  dataIndex: i
+                                });
+
+                                const storage = {
+                                  index: i,
+                                  dataSources: this.state.dataSources
+                                }
+                                localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
                                 this.props.setDataSource(d);
                               }}>
                                 load
@@ -179,7 +199,8 @@ export default class ControlPanel extends React.Component<Props, State> {
 
                       const dataSources = this.state.dataSources.concat([dataSource]);
 
-                      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataSources));
+                      const storage = { 'index': dataSources.length - 1, 'dataSources': dataSources };
+                      localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
                       this.setState({ addingSource: false, dataSources });
                       this.props.setDataSource(dataSource);
                     }}>
@@ -196,9 +217,12 @@ export default class ControlPanel extends React.Component<Props, State> {
   }
 
   static retrieveFirstDataSource() {
-    const dataSources = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (dataSources !== null && dataSources.length > 0) {
-      return dataSources[0];
+    const storage = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const dataSources = storage ? storage.dataSources : null;
+    const dataIndex = storage ? storage.index : 0;
+
+    if (dataSources !== null && dataSources.length > 0 && dataIndex < dataSources.length) {
+      return dataSources[dataIndex];
     } else {
       return null;
     }
