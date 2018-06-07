@@ -40,6 +40,7 @@ export default class ControlPanel extends React.Component<Props, State> {
         }}
       >
         <div className="guide">
+          <div className="instructions">Darker colors (text, nodes) and large widths (edges) indicate higher attention.</div>
           <ul className="instructions">
             <li className="instruction"><span className="bold">Hover</span> over either text or nodes to create a filter.</li>
             <li className="instruction"><span className="bold">Click and drag</span> over the output text / nodes to brush.</li>
