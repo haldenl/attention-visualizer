@@ -129,7 +129,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
                   filterByEdgeTokenMatch={this.filterByEdgeTokenMatch} 
                   setWeightThreshold={this.setWeightThreshold} weightThreshold={this.state.minAttnWeight}/>
               </div>
-              <DataPanel currentDataSource={this.state.dataRecord} lock={this.lock} setDataSource={this.setDataSource} />
+              <DataPanel data={this.data} currentDataSource={this.state.dataRecord} lock={this.lock} setDataSource={this.setDataSource} />
             </div>
           </SplitPane>
         </SplitPane>

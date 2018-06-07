@@ -64,8 +64,9 @@ export default class ControlPanel extends React.Component<Props, State> {
                 this.props.setWeightThreshold(this.state.weightThreshold);
               }}
             />
-            <div className='value'>{`Weight Threshold: ${this.props.weightThreshold}`}</div>
+            <div className='value'><span style={{ fontWeight: 400 }}>Weight Threshold: </span>{`${this.props.weightThreshold}`}</div>
           </div>
+          <br/>
           <br/>
           <div>The legend below is clickable.</div>
           <br />
