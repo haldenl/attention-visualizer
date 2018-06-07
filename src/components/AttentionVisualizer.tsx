@@ -42,6 +42,7 @@ interface State {
   locked: boolean;
   minAttnWeight: number;
   dataRecord: DataRecord;
+  redraw: boolean;
 }
 
 const DEFAULT_MIN_ATTENTION_WEIGHT = 0.05;
@@ -53,7 +54,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     super(props);
 
     this.data = null;
-    this.state = this.getStateFromData(null, null);
+
+    this.state = this.getStateFromData(null, null, DEFAULT_MIN_ATTENTION_WEIGHT);
 
     this.filterByOutputIndex = this.filterByOutputIndex.bind(this);
     this.filterByInputIndex = this.filterByInputIndex.bind(this);
@@ -61,6 +63,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     this.lock = this.lock.bind(this);
     this.setState = this.setState.bind(this);
     this.setDataSource = this.setDataSource.bind(this);
+    this.setWeightThreshold = this.setWeightThreshold.bind(this);
   }
 
   componentDidMount() {
@@ -68,7 +71,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
 
     d3.json(dataRecord.url).then((data: AttentionData) => {
       this.data = data;
-      this.setState( this.getStateFromData(data, dataRecord) );
+      this.setState( this.getStateFromData(data, dataRecord, this.state.minAttnWeight) );
     });
   }
 
@@ -102,7 +105,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
             {this.state.resizing ? null : this.state.flowmapData === null ? <Loading /> :
               <Flowmap data={this.state.flowmapData} filtered={this.state.filtered}
                 filterByOutputIndex={this.filterByOutputIndex} filterByInputIndex={this.filterByInputIndex}
-                lock={this.lock} locked={this.state.locked} />
+                lock={this.lock} locked={this.state.locked} redraw={this.state.redraw}/>
             }
             <div className="vertical">
               <div className="title">
@@ -123,7 +126,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
               }}>
                 <ControlPanel lock={this.lock} locked={this.state.locked}
                   filterByOutputIndex={this.filterByOutputIndex}
-                  filterByEdgeTokenMatch={this.filterByEdgeTokenMatch} />
+                  filterByEdgeTokenMatch={this.filterByEdgeTokenMatch} 
+                  setWeightThreshold={this.setWeightThreshold} weightThreshold={this.state.minAttnWeight}/>
               </div>
               <DataPanel currentDataSource={this.state.dataRecord} lock={this.lock} setDataSource={this.setDataSource} />
             </div>
@@ -332,24 +336,29 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
   }
 
   private setDataSource(dataRecord: DataRecord) {
-    this.setState(this.getStateFromData(null, dataRecord));
+    this.setState(this.getStateFromData(null, dataRecord, this.state.minAttnWeight));
     d3.json(dataRecord.url).then((data: AttentionData) => {
       this.data = data;
-      this.setState(this.getStateFromData(data, dataRecord));
+      this.setState(this.getStateFromData(data, dataRecord, this.state.minAttnWeight));
     });
   }
 
-  private getStateFromData(data: AttentionData, dataRecord: DataRecord) {
+  private getStateFromData(data: AttentionData, dataRecord: DataRecord, minAttnWeight: number) {
     let inputData = null;
     let outputData = null;
     let flowmapAttentionData = null;
     let flowmapData = null;
 
+    let redraw = false;
+
+    if (this.state && this.state.minAttnWeight !== minAttnWeight) {
+      redraw = true;
+    }
+
     if (data !== null) {
       inputData = AttentionVisualizer.getInputData(data);
       outputData = AttentionVisualizer.getOutputData(data);
-      flowmapAttentionData = AttentionVisualizer.getFlowmapAttentionData(data, DEFAULT_MIN_ATTENTION_WEIGHT);
-  
+      flowmapAttentionData = AttentionVisualizer.getFlowmapAttentionData(data, minAttnWeight);
       flowmapData = {
         inputRecords: inputData,
         outputRecords: outputData,
@@ -370,10 +379,15 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       resizing: false,
       filtered: false,
       locked: false,
-      minAttnWeight: DEFAULT_MIN_ATTENTION_WEIGHT,
-      dataRecord: dataRecord
+      minAttnWeight: minAttnWeight,
+      dataRecord: dataRecord,
+      redraw
     };
 
     return newState;
+  }
+  
+  private setWeightThreshold(weightThreshold: number) {
+    this.setState(this.getStateFromData(this.data, this.state.dataRecord, weightThreshold));
   }
 }

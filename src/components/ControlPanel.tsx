@@ -1,6 +1,8 @@
 import * as React from 'react';
+import Slider from 'react-rangeslider';
 
 import '../styles/ControlPanel.css';
+import 'react-rangeslider/lib/index.css'
 
 import lock from '../images/lock.svg';
 import openLock from '../images/unlocked.svg';
@@ -10,13 +12,22 @@ interface Props {
   locked: boolean;
   filterByOutputIndex: (filter: (index: number) => boolean) => void;
   filterByEdgeTokenMatch: (match: boolean) => void;
+  setWeightThreshold: (edgeThreshold: number) => void;
+  weightThreshold: number;
 }
 
 interface State {
-
+  weightThreshold: number;
 }
 
 export default class ControlPanel extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      weightThreshold: this.props.weightThreshold
+    }
+  }
 
   render() {
     return (
@@ -35,7 +46,27 @@ export default class ControlPanel extends React.Component<Props, State> {
             <li className="instruction">Clicking on any node / text locks the current selection.</li>
             <li className="instruction">Input tokens that appear on the flowmap are <span className="underline">underlined.</span></li>
           </ul>
-          <br />
+          <div className='slider'>
+            <Slider
+              min={0.005}
+              max={1}
+              step={0.005}
+              value={this.state.weightThreshold}
+              onChangeStart={() => {
+                this.props.lock(true);
+              }}
+              onChange={(weightThreshold: number) => {
+                weightThreshold = Math.round(weightThreshold * 1000) / 1000;
+                this.setState({ weightThreshold })
+              }}
+              onChangeComplete={() => { 
+                this.props.lock(false);
+                this.props.setWeightThreshold(this.state.weightThreshold);
+              }}
+            />
+            <div className='value'>{`Weight Threshold: ${this.props.weightThreshold}`}</div>
+          </div>
+          <br/>
           <div>The legend below is clickable.</div>
           <br />
           <div className="legend-clickable" onClick={(e: any) => {
@@ -61,7 +92,11 @@ export default class ControlPanel extends React.Component<Props, State> {
               </div>
           <br />
           {this.props.locked ?
-            <img className="locks" src={lock} /> : <img className="locks" src={openLock} />
+            <img className="locks" onClick={() => {
+              this.props.lock(false);
+            }} src={lock} /> : <img className="locks" src={openLock} onClick={() => {
+              this.props.lock(true);
+            }}/>
           }
           <div>click on available white-space to clear a selection.</div>
         </div>

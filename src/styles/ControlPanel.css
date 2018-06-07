@@ -22,9 +22,29 @@
     flex-direction: column;
     justify-content: center;
     align-items: center; }
+    .ControlPanel .guide .slider {
+      width: 200px; }
+      .ControlPanel .guide .slider .rangeslider-horizontal {
+        height: 4px;
+        box-shadow: none; }
+      .ControlPanel .guide .slider .rangeslider__fill {
+        background-color: #3b88be;
+        box-shadow: none; }
+      .ControlPanel .guide .slider .rangeslider__handle {
+        width: 12px;
+        height: 12px;
+        left: -13px;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: none; }
+        .ControlPanel .guide .slider .rangeslider__handle:focus {
+          outline: none; }
+        .ControlPanel .guide .slider .rangeslider__handle::after {
+          display: none; }
     .ControlPanel .guide .locks {
       opacity: 0.5;
-      margin-bottom: 16px; }
+      margin-bottom: 16px;
+      cursor: pointer; }
     .ControlPanel .guide .instructions {
       text-align: start;
       padding: 0;

@@ -26,9 +26,40 @@
     justify-content: center;
     align-items: center;
 
+    .slider {
+      width: 200px;
+
+      .rangeslider-horizontal {
+        height: 4px;
+        box-shadow: none;
+      }
+      .rangeslider__fill {
+        background-color: $medium-blue;
+        box-shadow: none;
+      }
+
+      .rangeslider__handle {
+        width: 12px;
+        height: 12px;
+        left: -13px;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: none;
+
+        &:focus {
+          outline: none;
+        }
+
+        &::after {
+          display: none;
+        }
+      }
+    }
+
     .locks {
       opacity: 0.5;
       margin-bottom: 16px;
+      cursor: pointer;
     }
 
     .instructions {

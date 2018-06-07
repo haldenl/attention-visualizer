@@ -16,6 +16,7 @@ interface Props {
   filtered: boolean;
   locked: boolean;
   lock: (lock: boolean) => void;
+  redraw: boolean;
 }
 
 interface State {
@@ -190,25 +191,7 @@ export default class Flowmap extends React.Component<Props, State> {
       .attr('transform', `translate(${Flowmap.margin.left}, ${Flowmap.margin.top})`);
 
     this.edges = this.chart.append('g');
-    this.edges.selectAll('.edge')
-      .data(this.props.data.attentionRecords)
-      .enter()
-      .append('path')
-      .attr('class', (d: FlowmapAttentionRecord) => {
-        return classNames({
-          'edge': true,
-          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token
-        })
-      })
-      .style('stroke', (d: FlowmapAttentionRecord) => {
-        if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
-          return this.state.edgeColorScaleCopy(d.weight);
-        } else {
-          return this.state.edgeColorScale(d.weight);
-        }
-      })
-      .attr('d', this.state.path)
-      .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
+    this.redrawEdges(true);
 
     this.inputNodes = this.chart.append('g')
       .on('mouseleave', () => {
@@ -353,28 +336,7 @@ export default class Flowmap extends React.Component<Props, State> {
         })
       );
 
-    this.edges.selectAll('.edge')
-      .data(this.props.data.attentionRecords, function(d: FlowmapAttentionRecord) {
-        return d.index;
-      })
-      .style('stroke', (d: FlowmapAttentionRecord) => {
-        if (d.selected) {
-          if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
-            return this.state.edgeColorScaleCopy(d.weight);
-          } else {
-            return this.state.edgeColorScale(d.weight);
-          }
-        } else {
-          return '#000';
-        }
-      })
-      .attr('class', (d: FlowmapAttentionRecord) => {
-        return classNames({
-          'edge': true,
-          'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
-          'faded': !d.selected
-        })
-      });
+    this.redrawEdges(this.props.redraw);
 
     this.inputNodes.selectAll('.node')
       .data(this.props.data.inputRecords)
@@ -460,17 +422,17 @@ export default class Flowmap extends React.Component<Props, State> {
           }
           return pos;
         })
-        .append('tspan')
-          .attr('class', (d: InputRecord) => {
-            return classNames({
-              'pos': true,
-              'copy': d.selected
-            })
-          })
-          .text((d: InputRecord) => {
-            return `${d.pos}`;
-          })
-          .attr('alignment-baseline', 'middle');
+        // .append('tspan')
+        //   .attr('class', (d: InputRecord) => {
+        //     return classNames({
+        //       'pos': true,
+        //       'copy': d.selected
+        //     })
+        //   })
+        //   .text((d: InputRecord) => {
+        //     return `${d.pos}`;
+        //   })
+        //   .attr('alignment-baseline', 'middle');
     }
   }
 
@@ -499,12 +461,65 @@ export default class Flowmap extends React.Component<Props, State> {
           }
           return pos;
         })
-        .append('tspan')
-          .attr('class', 'pos')
-          .text((d: OutputRecord) => {
-            return `${d.pos}`;
+        // .append('tspan')
+        //   .attr('class', 'pos')
+        //   .text((d: OutputRecord) => {
+        //     return `${d.pos}`;
+        //   })
+        //   .attr('alignment-baseline', 'middle');
+    }
+  }
+
+  private redrawEdges(redraw: boolean) {
+    if (redraw) {
+      this.edges.selectAll('.edge').remove();
+      this.edges.selectAll('.edge')
+        .data(this.props.data.attentionRecords)
+        .enter()
+        .append('path')
+        .attr('class', (d: FlowmapAttentionRecord) => {
+          return classNames({
+            'edge': true,
+            'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
+            'faded': !d.selected
           })
-          .attr('alignment-baseline', 'middle');
+        })
+        .style('stroke', (d: FlowmapAttentionRecord) => {
+          if (d.selected) {
+            if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+              return this.state.edgeColorScaleCopy(d.weight);
+            } else {
+              return this.state.edgeColorScale(d.weight);
+            }
+          } else {
+            return '#000';
+          }
+        })
+        .attr('d', this.state.path)
+        .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
+    } else {
+      this.edges.selectAll('.edge')
+        .data(this.props.data.attentionRecords)
+        .attr('class', (d: FlowmapAttentionRecord) => {
+          return classNames({
+            'edge': true,
+            'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
+            'faded': !d.selected
+          })
+        })
+        .style('stroke', (d: FlowmapAttentionRecord) => {
+          if (d.selected) {
+            if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+              return this.state.edgeColorScaleCopy(d.weight);
+            } else {
+              return this.state.edgeColorScale(d.weight);
+            }
+          } else {
+            return '#000';
+          }
+        })
+        .attr('d', this.state.path)
+        .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
     }
   }
 }
