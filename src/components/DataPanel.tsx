@@ -24,15 +24,17 @@ interface State {
 
 const STORAGE_KEY = 'attention-visualization-data-sources';
 
+const DEMO = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_17.json';
 const MICHELLE_MODEL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_0.json';
 const MICHELLE_HIERARCHICAL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/hierarchical_similarity_data_michelle_3.json';
 const MICHELLE_TEACHER =
 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/teacher_data_0.json';
+const DEMO_RECORD: DataRecord = { name: 'DEMO', url: DEMO }
 const MICHELLE_MODEL_RECORD: DataRecord = { name: 'michelle_model', url: MICHELLE_MODEL };
 const MICHELLE_HIERARCHICAL_RECORD: DataRecord = { name: 'michelle_hierarchical', url: MICHELLE_HIERARCHICAL };
 const MICHELLE_TEACHER_RECORD: DataRecord = { name: 'michelle_teacher', url: MICHELLE_TEACHER };
 
-const DEMOS: DataRecord[] = [MICHELLE_MODEL_RECORD, MICHELLE_HIERARCHICAL_RECORD, MICHELLE_TEACHER_RECORD];
+const DEMOS: DataRecord[] = [DEMO_RECORD, MICHELLE_MODEL_RECORD, MICHELLE_HIERARCHICAL_RECORD, MICHELLE_TEACHER_RECORD];
 
 export interface DataRecord {
   name: string;
@@ -117,7 +119,7 @@ export default class ControlPanel extends React.Component<Props, State> {
                             <div className="actions">
                               {
                                 // @ts-ignore
-                                DEMOS.map((d: DataRecord) => { return d.name }).includes(d.name) ? null :
+                                d.name === 'DEMO' ? null :
                                   <button className="remove" onClick={() => {
                                     this.state.dataSources.splice(i, 1);
                                     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.dataSources));
