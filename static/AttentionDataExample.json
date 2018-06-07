@@ -1,0 +1,30 @@
+{
+  "attentionRecords": [{
+    "inputIndex": 0,
+    "outputIndex": 0,
+    "weight": 1
+  }, 
+  {
+    "inputIndex": 1,
+    "outputIndex": 0,
+    "weight": 0
+  }],
+
+  "inputTokens": [{
+    "index": 0,
+    "token": "word"
+  }, 
+  {
+    "index": 1,
+    "token": "example"
+  }],
+
+  "outputTokens": [{
+    "index": 0,
+    "token": "word"
+  }, 
+  {
+    "index": 1,
+    "token": "example"
+  }]
+}
