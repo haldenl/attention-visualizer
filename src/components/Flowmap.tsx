@@ -378,11 +378,6 @@ export default class Flowmap extends React.Component<Props, State> {
   private redrawOutputText() {
     this.outputText.selectAll('.output-text').remove();
     if (this.props.filtered) {
-      const inputTokens = new Set();
-      for (const record of this.props.data.inputRecords) {
-        inputTokens.add(record.token);
-      }
-
       const usedOutputTextPositions = new Set();      
   
       this.outputText.selectAll('.output-text')
@@ -394,8 +389,8 @@ export default class Flowmap extends React.Component<Props, State> {
         .attr('class', (d: OutputRecord) => {
           return classNames({
             'text output-text': true,
-            'novel': !inputTokens.has(d.token),
-            'output-copy': inputTokens.has(d.token),
+            'novel': d.novel,
+            'output-copy': !d.novel
           })
         })
         .attr('alignment-baseline', 'middle')
