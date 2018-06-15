@@ -3,6 +3,10 @@
   height: 100%;
   margin: 0;
   padding: 0; }
+  .Flowmap .selection {
+    fill: transparent;
+    stroke-width: 1px;
+    stroke: #3b88be; }
   .Flowmap .event-panel {
     fill: transparent; }
   .Flowmap .edge {

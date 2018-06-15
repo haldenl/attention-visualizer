@@ -7,6 +7,15 @@
   display: flex;
   flex-direction: column;
 
+  .minimap {
+    background-color: rgba(0, 0, 0, 0.089);
+    border: none;
+
+    .minimap-viewport {
+      background-color: rgba(0, 0, 0, 0.144);
+    }
+  }
+
   .text {
     cursor: default;    
     padding: 8px 128px 8px 8px;  // space for minimap

@@ -90,8 +90,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     return (
       <div className="AttentionVisualizer">
         <SplitPane defaultSize={400} minSize={320}
-          onDragStarted={function () { setState({ resizing: true }); }}
-          onDragFinished={function () { setState({ resizing: false }); }}
+          onDragStarted={function () { setState({ resizingText: true , resizing: true}); }}
+          onDragFinished={function () { setState({ resizingText: false, resizing: false }); }}
         >
           { /* hide the minimap because resizing causes it to bug out */}
           <div className="vertical">
@@ -108,8 +108,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
             </div>
           </div>
           <SplitPane primary="second" defaultSize={400} minSize={320}
-            onDragStarted={function () { setState({ resizing: true }); }}
-            onDragFinished={function () { setState({ resizing: false }); }}
+            onDragStarted={function () { setState({ resizingText: true, resizing: true }); }}
+            onDragFinished={function () { setState({ resizingText: false, resizing: false }); }}
           >
             {this.state.resizing ? null : this.state.flowmapData === null ? <Loading /> :
               <Flowmap data={this.state.flowmapData} filtered={this.state.filtered}

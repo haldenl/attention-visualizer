@@ -20,6 +20,7 @@ interface Props {
 
 interface State {
   colorScale: Function;
+  height: number;
 }
 
 export interface InputRecord {
@@ -33,11 +34,17 @@ export interface InputRecord {
 export const WEIGHT_SCALE = 1.5;
 
 export default class InputText extends React.Component<Props, State> {
+  divElement: any;
+  static minimapPadding = {
+    top: 16, bottom: 16
+  }
+
   constructor(props: Props) {
     super(props);
 
     this.state = {
-      colorScale: null
+      colorScale: null,
+      height: 0
     }
   }
 
@@ -53,6 +60,11 @@ export default class InputText extends React.Component<Props, State> {
     return {
       colorScale
     }
+  }
+
+  componentDidMount() {
+    const height = this.divElement.clientHeight - InputText.minimapPadding.top - InputText.minimapPadding.bottom;
+    this.setState({ height });
   }
 
   render() {
@@ -89,7 +101,7 @@ export default class InputText extends React.Component<Props, State> {
 
     if (this.props.showMinimap) {
       return (
-        <div className="InputText" 
+        <div className="InputText" ref={ (divElement) => this.divElement = divElement }
           onMouseOut={function() {
             if (!locked) {
               filterByIndex(null);
@@ -101,7 +113,7 @@ export default class InputText extends React.Component<Props, State> {
             lock(false);
           }}
         >
-          <Minimap selector=".token" childComponent={MinimapChild} width={100} keepAspectRatio={true}>
+          <Minimap selector=".token" childComponent={MinimapChild} width={100} height={this.state.height} keepAspectRatio={true}>
             <div className="text">
               {text}
             </div>
@@ -111,7 +123,8 @@ export default class InputText extends React.Component<Props, State> {
     } else {
       return (
         <div className="InputText"
-        
+        ref={ (divElement) => this.divElement = divElement }
+
         onMouseOut={function() {
           if (!locked) {
             filterByIndex(null);
