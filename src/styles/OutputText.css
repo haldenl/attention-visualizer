@@ -9,6 +9,6 @@
     padding: 8px;
     overflow: auto; }
     .OutputText .content .text .token.selected {
-      background-color: #ffa6a6; }
+      background-color: #ffb9a7; }
     .OutputText .content .text .token::selection {
       background: transparent; }
