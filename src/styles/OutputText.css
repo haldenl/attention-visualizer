@@ -10,5 +10,9 @@
     overflow: auto; }
     .OutputText .content .text .token.selected {
       background-color: #ffb9a7; }
+    .OutputText .content .text .token.novel {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 400; }
     .OutputText .content .text .token::selection {
       background: transparent; }

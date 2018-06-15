@@ -49,7 +49,7 @@
       height: 24px;
       justify-content: center;
       align-items: center;
-      color: #afafaf; }
+      color: #9b9b9b; }
     .DataPanel .insides .info {
       padding: 16px;
       height: calc(100% - 72px);
@@ -70,15 +70,15 @@
             .DataPanel .insides .info .data-content .data-sources ul li {
               margin: 8px 0 8px 0; }
           .DataPanel .insides .info .data-content .data-sources .example-json {
-            color: #afafaf;
+            color: #9b9b9b;
             text-align: center; }
             .DataPanel .insides .info .data-content .data-sources .example-json:visited {
-              color: #afafaf; }
+              color: #9b9b9b; }
             .DataPanel .insides .info .data-content .data-sources .example-json .url {
               overflow: hidden;
               white-space: nowrap;
               text-overflow: ellipsis;
-              color: #afafaf; }
+              color: #9b9b9b; }
           .DataPanel .insides .info .data-content .data-sources .data-source {
             display: flex;
             flex-direction: row;
@@ -91,7 +91,7 @@
               overflow: hidden;
               white-space: nowrap;
               text-overflow: ellipsis;
-              color: #afafaf; }
+              color: #9b9b9b; }
             .DataPanel .insides .info .data-content .data-sources .data-source .actions {
               display: flex;
               flex-direction: row; }
@@ -100,7 +100,7 @@
                 border-radius: 4px;
                 border: 1px solid #ffb9a7;
                 margin: 0 4px 0 4px;
-                color: #afafaf; }
+                color: #9b9b9b; }
                 .DataPanel .insides .info .data-content .data-sources .data-source .actions .remove:hover {
                   border: 1px solid #c41e1e; }
               .DataPanel .insides .info .data-content .data-sources .data-source .actions .load {
@@ -108,7 +108,7 @@
                 border-radius: 4px;
                 border: 1px solid #6fb5ff;
                 margin: 0 4px 0 4px;
-                color: #afafaf; }
+                color: #9b9b9b; }
                 .DataPanel .insides .info .data-content .data-sources .data-source .actions .load:hover {
                   border: 1px solid #256ab3; }
         .DataPanel .insides .info .data-content .controls {
@@ -117,14 +117,14 @@
           display: flex;
           flex-direction: column;
           align-items: center;
-          color: #afafaf; }
+          color: #9b9b9b; }
           .DataPanel .insides .info .data-content .controls .table {
             width: calc(100% - 16px);
             display: flex;
             flex-direction: column;
             margin: 4px 8px 16px 8px;
             font-weight: 300;
-            color: #afafaf; }
+            color: #9b9b9b; }
             .DataPanel .insides .info .data-content .controls .table .row {
               display: flex;
               flex-direction: row;
@@ -139,10 +139,10 @@
             font-family: 'Roboto', sans-serif;
             box-shadow: none;
             border-style: solid;
-            border-color: #afafaf;
-            color: #afafaf;
+            border-color: #9b9b9b;
+            color: #9b9b9b;
             border: none;
-            border-bottom: 1px solid #afafaf;
+            border-bottom: 1px solid #9b9b9b;
             border-width: 1px;
             min-width: 140px;
             font-size: 14px;
@@ -159,13 +159,13 @@
             border: 1px solid #e9e9e9;
             border-radius: 4px; }
             .DataPanel .insides .info .data-content .controls .add-data-button:hover {
-              border: 1px solid #afafaf; }
+              border: 1px solid #9b9b9b; }
           .DataPanel .insides .info .data-content .controls .submit-data-button {
             margin: 8px 0 0 0;
             padding: 4px 8px 4px 8px;
             border: 1px solid #e9e9e9;
             border-radius: 4px;
-            color: #afafaf; }
+            color: #9b9b9b; }
             .DataPanel .insides .info .data-content .controls .submit-data-button:hover {
               border: 1px solid #256ab3; }
           .DataPanel .insides .info .data-content .controls .cancel-data-button {
@@ -173,6 +173,6 @@
             padding: 4px 8px 4px 8px;
             border: 1px solid #e9e9e9;
             border-radius: 4px;
-            color: #afafaf; }
+            color: #9b9b9b; }
             .DataPanel .insides .info .data-content .controls .cancel-data-button:hover {
               border: 1px solid #c41e1e; }

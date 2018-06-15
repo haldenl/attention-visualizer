@@ -24,6 +24,7 @@ export interface OutputRecord {
   pos: string;
   weight?: number;
   selected?: boolean;
+  novel?: boolean;
 }
 
 interface Tracking {
@@ -74,7 +75,8 @@ export default class OutputText extends React.Component<Props, State> {
       }
 
       const classes = classNames({
-        'token': true, 'selected': !this.props.filtered || record.selected
+        'token': true, 'selected': !this.props.filtered || record.selected, 'novel': record.novel,
+        'copy': !record.novel
       });
 
       return (

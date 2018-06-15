@@ -18,6 +18,15 @@
         &.selected {
           background-color: $light-red;
         }
+
+        &.novel {
+          font-family: 'Playfair Display', serif;
+          font-style: italic;
+          font-weight: 400;
+        }
+
+        &.copy {
+        }
   
         &::selection {
           background: transparent;

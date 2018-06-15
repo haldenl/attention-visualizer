@@ -344,7 +344,7 @@ export default class Flowmap extends React.Component<Props, State> {
           return classNames({
             'text': true,
             'input-text': true,
-            'copy': d.selected
+            'input-copy': d.selected
           })
         })
         .attr('alignment-baseline', 'middle')
@@ -378,6 +378,11 @@ export default class Flowmap extends React.Component<Props, State> {
   private redrawOutputText() {
     this.outputText.selectAll('.output-text').remove();
     if (this.props.filtered) {
+      const inputTokens = new Set();
+      for (const record of this.props.data.inputRecords) {
+        inputTokens.add(record.token);
+      }
+
       const usedOutputTextPositions = new Set();      
   
       this.outputText.selectAll('.output-text')
@@ -386,7 +391,13 @@ export default class Flowmap extends React.Component<Props, State> {
         }))
         .enter()
         .append('text')
-        .attr('class', 'text output-text')
+        .attr('class', (d: OutputRecord) => {
+          return classNames({
+            'text output-text': true,
+            'novel': !inputTokens.has(d.token),
+            'output-copy': inputTokens.has(d.token),
+          })
+        })
         .attr('alignment-baseline', 'middle')
         .attr('x', this.state.xScale('output') + 8 + Flowmap.outputNodeWidth)
         .text((d: OutputRecord) => { return `${d.token} ` })

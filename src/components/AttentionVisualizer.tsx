@@ -205,12 +205,18 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
         return dict;
       }, {})
 
+    const inputTokens = new Set();
+    for (const record of data.inputTokens) {
+      inputTokens.add(record.token);
+    }
+
     const outputData: OutputRecord[] = data.outputTokens.map((d: TextRecord, i: number) => {
       return {
         index: d.index,
         token: d.token,
         pos: d.pos,
-        weight: outputAttention[d.index]
+        weight: outputAttention[d.index],
+        novel: !inputTokens.has(d.token)
       }
     })
 

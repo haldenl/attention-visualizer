@@ -63,7 +63,18 @@
     user-select: none;
     pointer-events: none;
 
-    &.copy {
+    &.novel {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      fill: #000;
+      font-weight: 400;
+    }
+
+    &.output-copy {
+      fill: $dark-grey
+    }
+
+    &.input-copy {
       fill: $medium-grey
     }
 

@@ -27,13 +27,20 @@
     font-weight: 400;
     user-select: none;
     pointer-events: none; }
-    .Flowmap .text.copy {
-      fill: #afafaf; }
+    .Flowmap .text.novel {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      fill: #000;
+      font-weight: 400; }
+    .Flowmap .text.output-copy {
+      fill: #797979; }
+    .Flowmap .text.input-copy {
+      fill: #9b9b9b; }
     .Flowmap .text .pos {
       font-weight: 300;
       font-family: 'Roboto', serif;
       font-style: italic;
-      fill: #afafaf; }
+      fill: #9b9b9b; }
       .Flowmap .text .pos.copy {
         fill: #e9e9e9; }
   .Flowmap .grabbable {

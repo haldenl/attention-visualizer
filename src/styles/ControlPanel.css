@@ -3,7 +3,7 @@
   width: 100%;
   height: 100%;
   font-family: 'Roboto', sans-serif;
-  color: #afafaf;
+  color: #9b9b9b;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -53,9 +53,9 @@
         margin: 4px 0 4px 0; }
         .ControlPanel .guide .instructions .instruction .bold {
           font-weight: 700;
-          color: #afafaf; }
+          color: #9b9b9b; }
         .ControlPanel .guide .instructions .instruction .underline {
-          border-bottom: 1px solid #afafaf; }
+          border-bottom: 1px solid #9b9b9b; }
     .ControlPanel .guide .legend-clickable {
       margin: 4px 0 0 0;
       padding: 4px 0 4px 0;
@@ -64,4 +64,4 @@
       border: 1px solid #e9e9e9;
       border-radius: 4px; }
       .ControlPanel .guide .legend-clickable:hover {
-        border: 1px solid #afafaf; }
+        border: 1px solid #9b9b9b; }
