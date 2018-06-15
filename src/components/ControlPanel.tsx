@@ -46,6 +46,7 @@ export default class ControlPanel extends React.Component<Props, State> {
             <li className="instruction"><span className="bold">Click and drag</span> over the output text / nodes to brush.</li>
             <li className="instruction">Clicking on any node / text locks the current selection.</li>
             <li className="instruction">Input tokens that appear on the flowmap are <span className="underline">underlined.</span></li>
+            <li className="instruction">Set the range of input tokens displayed using the input sequence brush on the far left of the flow map.</li>
           </ul>
           <div className='slider'>
             <Slider
@@ -101,6 +102,8 @@ export default class ControlPanel extends React.Component<Props, State> {
             }}/>
           }
           <div>click on available white-space to clear a selection.</div>
+          <br/>
+          <div style={{ fontWeight: 400 }}>expand the panel below to choose or load a dataset.</div>
         </div>
       </div>
     )

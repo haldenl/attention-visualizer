@@ -13,10 +13,12 @@ interface Props {
   data: FlowmapData;
   filterByOutputIndex: (filter: (index: number) => boolean) => void;
   filterByInputIndex: (filter: (index: number) => boolean) => void;
+  zoomByInputIndex: (start: number, end: number) => void;
   filtered: boolean;
   locked: boolean;
   lock: (lock: boolean) => void;
   redraw: boolean;
+  setResizingText: (resizing: boolean) => void;
 }
 
 interface State {
@@ -31,6 +33,8 @@ interface State {
   edgeColorScale: any;
   edgeColorScaleCopy: any;
   edgeColorScaleGrey: any;
+  inputRecordsReIndexed: any;
+  inputRecordsTrueIndex: any;
 }
 
 interface Tracking {
@@ -59,12 +63,15 @@ export default class Flowmap extends React.Component<Props, State> {
     bottom: 64,
     left: 96
   };
-  static inputNodeWidth = 10;  
+  static inputNodeWidth = 20;
+  static inputAxisNodeWidth = 10;
   static outputNodeWidth = 24;
   static maxEdgeWidth = 5;
   eventPanel: any;
   chart: any;
   inputNodes: any;
+  inputNodeAxis: any;
+  inputNodeAxisScale: any;
   outputNodes: any;
   edges: any;
   inputText: any;
@@ -87,6 +94,8 @@ export default class Flowmap extends React.Component<Props, State> {
       edgeColorScale: null,
       edgeColorScaleCopy: null,
       edgeColorScaleGrey: null,
+      inputRecordsReIndexed: null,
+      inputRecordsTrueIndex: null
     }
 
     this.tracking = {
@@ -106,6 +115,10 @@ export default class Flowmap extends React.Component<Props, State> {
         return d.weight * WEIGHT_SCALE;
     })];
 
+    if (inputWeightDomain[1] === 0) {
+      inputWeightDomain[1] = 1;
+    }
+
     // @ts-ignore
     const inputColorScale =  d3.scaleSequential(d3.interpolateBlues).domain(inputWeightDomain);
 
@@ -121,18 +134,28 @@ export default class Flowmap extends React.Component<Props, State> {
     const xScale = d3.scaleOrdinal()
       .domain(['input', 'output']);
 
+    const inputRecordsReIndexed = nextProps.data.inputRecords.reduce((map: any, d: InputRecord) => {
+      map[d.index] = d;
+      return map;
+    }, {});
+
+    const inputRecordsTrueIndex = nextProps.data.inputRecords.reduce((map: any, d: InputRecord, i: number) => {
+      map[d.index] = i;
+      return map;
+    }, {});
+
     const path = (d: any) => {
       // @ts-ignore
       const source: any = {};
 
       // @ts-ignore
-      source.x = xScale('input') + Flowmap.inputNodeWidth / 2;
-      source.y = inputScale(d.inputIndex) + (inputScale.bandwidth() / 2);
+      source.x = xScale('input') + Flowmap.inputNodeWidth;
+      source.y = inputScale(inputRecordsTrueIndex[d.inputIndex]) + (inputScale.bandwidth() / 2);
 
       const dest: any = {};
 
       // @ts-ignore
-      dest.x = xScale('output') + Flowmap.outputNodeWidth / 2;
+      dest.x = xScale('output');
       dest.y = outputScale(d.outputIndex) + (outputScale.bandwidth() / 2);
         
       return "M" + source.x + "," + source.y
@@ -171,6 +194,8 @@ export default class Flowmap extends React.Component<Props, State> {
       edgeColorScale,
       edgeColorScaleCopy,
       edgeColorScaleGrey,
+      inputRecordsReIndexed,
+      inputRecordsTrueIndex
     }
   }
 
@@ -194,129 +219,65 @@ export default class Flowmap extends React.Component<Props, State> {
     this.redrawEdges(true);
 
     this.inputNodes = this.chart.append('g')
+      .attr('class', 'input-nodes')
       .on('mouseleave', () => {
         if (!this.props.locked && !this.tracking.brushing) {
           this.props.filterByOutputIndex(null);
         }
       });
+    this.redrawInputNodes(true);
 
-    this.inputNodes.selectAll('.node')
+
+    this.inputNodeAxisScale = this.state.inputScale;
+    this.inputNodeAxis = this.chart.append('g')
+      .attr('transform', `translate(${-Flowmap.margin.left + 16}, 0)`);
+    this.inputNodeAxis.selectAll('.node')
       .data(this.props.data.inputRecords)
       .enter()
       .append('rect')
       .attr('class', 'node input')
-      .attr('x', this.state.xScale('input'))
+      .attr('x', 0)
       .attr('y', (d: any) => { return this.state.inputScale(d.index)})
-      .attr('width', Flowmap.inputNodeWidth)
+      .attr('width', Flowmap.inputAxisNodeWidth)
       .attr('height', this.state.inputScale.bandwidth())
-      .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); })
-      .on('mouseenter', (d: InputRecord) => {
-        if (!this.props.locked && !this.tracking.brushing) { 
-          // highlight a single token
-          this.props.filterByInputIndex(function(index: number) {
-            return index === d.index;
-          });
-        }
-      }).on('click', (d: OutputRecord) => {
-        this.props.lock(!this.props.locked);
-      })
+      .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); });
+
+    const brushed = () => {
+      var s = d3.event.selection || this.inputNodeAxisScale.range();
+      const [start, end] = s.map((d: number) => {
+        const eachBand = this.inputNodeAxisScale.step();
+        let index = Math.floor((d / eachBand));
+        index = index === this.inputNodeAxisScale.domain().length ? index - 1 : index;
+        return this.inputNodeAxisScale.domain()[index];
+      });
+
+      this.props.setResizingText(false);
+      this.props.zoomByInputIndex(start, end);
+    }
+
+    const brushStart = () => {
+      this.props.setResizingText(true);
+    }
+
+    const brush = d3.brushY()
+      .extent([[0, 0], [Flowmap.inputAxisNodeWidth, this.state.inputScale.bandwidth() * this.props.data.inputRecords.length]])
+      .on("end", brushed)
+      .on("start", brushStart);
+
+    this.inputNodeAxis.append('g')
+      .attr('class', 'brush')
+      .call(brush)
+      .call(brush.move, this.state.inputScale.range());
 
     this.outputNodes = this.chart.append('g')
+      .attr('class', 'output-nodes')
       .on('mouseleave', () => {
         if (!this.props.locked && !this.tracking.brushing) {
           this.props.filterByOutputIndex(null);
         }
       });
+    this.redrawOutputNodes(true);
 
-    this.outputNodes.selectAll('.node')
-      .data(this.props.data.outputRecords)
-      .enter()
-      .append('rect')
-      .attr('class', (d: OutputRecord) => {
-        return classNames({
-          'node': true,
-          'output': true,
-          'clickable': !this.props.locked && !this.tracking.brushing,
-          'selected': d.selected && this.props.filtered,
-          'grabbable': d.selected && this.props.locked && !this.tracking.brushing,
-          'grabbed': this.props.locked && this.tracking.brushing,
-          'extendable': this.tracking.brushing && !this.props.locked
-        });
-      })
-      .attr('x', this.state.xScale('output'))
-      .attr('y', (d: any) => { return this.state.outputScale(d.index)})
-      .attr('width', Flowmap.outputNodeWidth)
-      .attr('height', this.state.outputScale.bandwidth())
-      .attr('fill', (d: OutputRecord) => { 
-        if (d.selected && this.props.filtered) {
-          return this.state.outputColorScale(d.weight);
-        } else {
-          return '#fff';
-        }
-      })
-      .on('mouseenter', (d: OutputRecord) => {
-        if (this.props.locked) {
-          if (this.tracking.brushing) {
-            // move brush
-            const delta = d.index - this.tracking.prev;
-            this.tracking.anchor += delta;
-            this.tracking.end += delta;
-            this.props.filterByOutputIndex((index: number) => {
-              return (
-                (index >= this.tracking.anchor && index <= this.tracking.end) ||
-                (index <= this.tracking.anchor && index >= this.tracking.end)
-              );
-            });
-          }
-          this.tracking.prev = d.index;
-        } else {
-          if (this.tracking.brushing) {
-            // increase brush range
-            this.props.filterByOutputIndex((index: number) => {
-              return (
-                (index >= this.tracking.anchor && index <= d.index) ||
-                (index <= this.tracking.anchor && index >= d.index)
-              );
-            });
-          } else {
-            this.tracking.anchor = d.index;
-            this.tracking.end = d.index;
-            this.tracking.prev = d.index;            
-            // highlight a single token
-            this.props.filterByOutputIndex(function(index: number) {
-              return index === d.index;
-            });
-          }
-        }
-      }).on('mousedown', (d: OutputRecord) => {
-        if (this.props.locked) {
-          this.tracking.prev = d.index;
-        }
-        this.tracking.brushing = true;
-        if (!d.selected) {
-          this.props.lock(false);
-          this.tracking.anchor = d.index;
-          this.tracking.end = d.index;
-          this.tracking.prev = d.index;            
-          // highlight a single token
-          this.props.filterByOutputIndex(function(index: number) {
-            return index === d.index;
-          });
-        } else {
-          this.forceUpdate();
-        }
-      }).on('mouseup', (d: OutputRecord) => {
-        const wasBrushing = this.tracking.brushing;
-        this.tracking.brushing = false;        
-        if (this.props.locked) {
-          this.forceUpdate();
-        } else {
-          this.tracking.end = d.index;
-          if (d.selected && wasBrushing) {
-            this.props.lock(true);
-          }
-        }
-      });
 
     this.inputText = this.chart.append('g');
     this.outputText = this.chart.append('g');
@@ -338,30 +299,8 @@ export default class Flowmap extends React.Component<Props, State> {
 
     this.redrawEdges(this.props.redraw);
 
-    this.inputNodes.selectAll('.node')
-      .data(this.props.data.inputRecords)
-      .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); });
-
-    this.outputNodes.selectAll('.node')
-      .data(this.props.data.outputRecords)
-      .attr('class', (d: OutputRecord) => {
-        return classNames({
-          'node': true,
-          'output': true,
-          'clickable': !this.props.locked && !this.tracking.brushing,
-          'selected': d.selected && this.props.filtered,
-          'grabbable': d.selected && this.props.locked && !this.tracking.brushing,
-          'grabbed': this.props.locked && this.tracking.brushing,
-          'extendable': this.tracking.brushing && !this.props.locked
-        });
-      })
-      .attr('fill', (d: any) => { 
-        if (d.selected && this.props.filtered) {
-          return this.state.outputColorScale(d.weight);
-        } else {
-          return '#fff';
-        }
-      });
+    this.redrawInputNodes(this.props.redraw);
+    this.redrawOutputNodes(false);
     
     this.redrawInputText();
     this.redrawOutputText();
@@ -413,7 +352,7 @@ export default class Flowmap extends React.Component<Props, State> {
         .attr('text-anchor', 'end')
         .text((d: InputRecord) => { return `${d.token} `})
         .attr('y', (d: InputRecord) => {
-          let pos = Math.round(this.state.inputScale(d.index)) + Math.round(this.state.inputScale.bandwidth() / 2);
+          let pos = Math.round(this.state.inputScale(this.state.inputRecordsTrueIndex[d.index])) + Math.round(this.state.inputScale.bandwidth() / 2);
           while (usedInputTextPositions.has(pos)) {
             pos += 1;
           }
@@ -480,13 +419,13 @@ export default class Flowmap extends React.Component<Props, State> {
         .attr('class', (d: FlowmapAttentionRecord) => {
           return classNames({
             'edge': true,
-            'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
+            'copy': this.state.inputRecordsReIndexed[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
             'faded': !d.selected
           })
         })
         .style('stroke', (d: FlowmapAttentionRecord) => {
           if (d.selected) {
-            if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+            if (this.state.inputRecordsReIndexed[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
               return this.state.edgeColorScaleCopy(d.weight);
             } else {
               return this.state.edgeColorScale(d.weight);
@@ -503,13 +442,13 @@ export default class Flowmap extends React.Component<Props, State> {
         .attr('class', (d: FlowmapAttentionRecord) => {
           return classNames({
             'edge': true,
-            'copy': this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
+            'copy': this.state.inputRecordsReIndexed[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token,
             'faded': !d.selected
           })
         })
         .style('stroke', (d: FlowmapAttentionRecord) => {
           if (d.selected) {
-            if (this.props.data.inputRecords[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
+            if (this.state.inputRecordsReIndexed[d.inputIndex].token === this.props.data.outputRecords[d.outputIndex].token) {
               return this.state.edgeColorScaleCopy(d.weight);
             } else {
               return this.state.edgeColorScale(d.weight);
@@ -520,6 +459,157 @@ export default class Flowmap extends React.Component<Props, State> {
         })
         .attr('d', this.state.path)
         .style('stroke-width', (d: FlowmapAttentionRecord) => { return this.state.edgeWidthScale(d.weight) });
+    }
+  }
+  
+  private redrawInputNodes(redraw: boolean) {
+    if (redraw) {
+      this.inputNodes.selectAll('.node').remove();
+      this.inputNodes.on('mouseleave', () => {
+        if (!this.props.locked && !this.tracking.brushing) {
+          this.props.filterByOutputIndex(null);
+        }
+      });
+      this.inputNodes.selectAll('.node')
+        .data(this.props.data.inputRecords)
+        .enter()
+        .append('rect')
+        .attr('class', 'node input')
+        .attr('x', this.state.xScale('input'))
+        .attr('y', (d: any, i:number) => { return this.state.inputScale(i)})
+        .attr('width', Flowmap.inputNodeWidth)
+        .attr('height', this.state.inputScale.bandwidth())
+        .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); })
+        .on('mouseenter', (d: InputRecord) => {
+          if (!this.props.locked && !this.tracking.brushing) { 
+            // highlight a single token
+            this.props.filterByInputIndex(function(index: number) {
+              return index === d.index;
+            });
+          }
+        }).on('click', (d: OutputRecord) => {
+          this.props.lock(!this.props.locked);
+        })
+    } else {
+      this.inputNodes.selectAll('.node')
+        .data(this.props.data.inputRecords)
+        .attr('fill', (d: any) => { return this.state.inputColorScale(d.weight); });
+    }
+  }
+
+  private redrawOutputNodes(redraw: boolean) {
+    if (redraw) {
+      this.outputNodes.selectAll('.node').remove();
+      this.outputNodes.selectAll('.node')
+        .data(this.props.data.outputRecords)
+        .enter()
+        .append('rect')
+        .attr('class', (d: OutputRecord) => {
+          return classNames({
+            'node': true,
+            'output': true,
+            'clickable': !this.props.locked && !this.tracking.brushing,
+            'selected': d.selected && this.props.filtered,
+            'grabbable': d.selected && this.props.locked && !this.tracking.brushing,
+            'grabbed': this.props.locked && this.tracking.brushing,
+            'extendable': this.tracking.brushing && !this.props.locked
+          });
+        })
+        .attr('x', this.state.xScale('output'))
+        .attr('y', (d: any) => { return this.state.outputScale(d.index)})
+        .attr('width', Flowmap.outputNodeWidth)
+        .attr('height', this.state.outputScale.bandwidth())
+        .attr('fill', (d: OutputRecord) => { 
+          if (d.selected && this.props.filtered) {
+            return this.state.outputColorScale(d.weight);
+          } else {
+            return '#fff';
+          }
+        })
+        .on('mouseenter', (d: OutputRecord) => {
+          if (this.props.locked) {
+            if (this.tracking.brushing) {
+              // move brush
+              const delta = d.index - this.tracking.prev;
+              this.tracking.anchor += delta;
+              this.tracking.end += delta;
+              this.props.filterByOutputIndex((index: number) => {
+                return (
+                  (index >= this.tracking.anchor && index <= this.tracking.end) ||
+                  (index <= this.tracking.anchor && index >= this.tracking.end)
+                );
+              });
+            }
+            this.tracking.prev = d.index;
+          } else {
+            if (this.tracking.brushing) {
+              // increase brush range
+              this.props.filterByOutputIndex((index: number) => {
+                return (
+                  (index >= this.tracking.anchor && index <= d.index) ||
+                  (index <= this.tracking.anchor && index >= d.index)
+                );
+              });
+            } else {
+              this.tracking.anchor = d.index;
+              this.tracking.end = d.index;
+              this.tracking.prev = d.index;            
+              // highlight a single token
+              this.props.filterByOutputIndex(function(index: number) {
+                return index === d.index;
+              });
+            }
+          }
+        }).on('mousedown', (d: OutputRecord) => {
+          if (this.props.locked) {
+            this.tracking.prev = d.index;
+          }
+          this.tracking.brushing = true;
+          if (!d.selected) {
+            this.props.lock(false);
+            this.tracking.anchor = d.index;
+            this.tracking.end = d.index;
+            this.tracking.prev = d.index;            
+            // highlight a single token
+            this.props.filterByOutputIndex(function(index: number) {
+              return index === d.index;
+            });
+          } else {
+            this.forceUpdate();
+          }
+        }).on('mouseup', (d: OutputRecord) => {
+          const wasBrushing = this.tracking.brushing;
+          this.tracking.brushing = false;        
+          if (this.props.locked) {
+            this.forceUpdate();
+          } else {
+            this.tracking.end = d.index;
+            if (d.selected && wasBrushing) {
+              this.props.lock(true);
+            }
+          }
+        });
+    } else {
+      this.outputNodes.selectAll('.node')
+        .data(this.props.data.outputRecords)
+        .attr('class', (d: OutputRecord) => {
+          return classNames({
+            'node': true,
+            'output': true,
+            'clickable': !this.props.locked && !this.tracking.brushing,
+            'selected': d.selected && this.props.filtered,
+            'grabbable': d.selected && this.props.locked && !this.tracking.brushing,
+            'grabbed': this.props.locked && this.tracking.brushing,
+            'extendable': this.tracking.brushing && !this.props.locked
+          });
+        })
+        .attr('fill', (d: any) => { 
+          if (d.selected && this.props.filtered) {
+            return this.state.outputColorScale(d.weight);
+          } else {
+            return '#fff';
+          }
+        });
     }
   }
 }

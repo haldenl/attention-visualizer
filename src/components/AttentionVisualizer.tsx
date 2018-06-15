@@ -38,6 +38,7 @@ interface State {
   outputData: OutputRecord[] | null;
   flowmapData: FlowmapData | null;
   resizing: boolean;
+  resizingText: boolean;
   filtered: boolean;
   locked: boolean;
   minAttnWeight: number;
@@ -48,6 +49,7 @@ interface State {
 const DEFAULT_MIN_ATTENTION_WEIGHT = 0.05;
 
 export default class AttentionVisualizer extends React.Component<Props, State> {
+  originalData: AttentionData;
   data: AttentionData;
 
   constructor(props: Props) {
@@ -60,17 +62,24 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     this.filterByOutputIndex = this.filterByOutputIndex.bind(this);
     this.filterByInputIndex = this.filterByInputIndex.bind(this);
     this.filterByEdgeTokenMatch = this.filterByEdgeTokenMatch.bind(this);
+    this.zoomByInputIndex = this.zoomByInputIndex.bind(this);
     this.lock = this.lock.bind(this);
     this.setState = this.setState.bind(this);
     this.setDataSource = this.setDataSource.bind(this);
     this.setWeightThreshold = this.setWeightThreshold.bind(this);
+    this.setResizingText = this.setResizingText.bind(this);
   }
 
   componentDidMount() {
     let dataRecord: DataRecord = DataPanel.retrieveFirstDataSource();
 
     d3.json(dataRecord.url).then((data: AttentionData) => {
-      this.data = data;
+      this.originalData = data;
+      this.data = {
+        attentionRecords: data.attentionRecords.slice(),
+        inputTokens: data.inputTokens.slice(),
+        outputTokens: data.outputTokens.slice() 
+      }
       this.setState( this.getStateFromData(data, dataRecord, this.state.minAttnWeight) );
     });
   }
@@ -92,7 +101,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
             <div className="input-pane">
               {this.state.inputData !== null ?
                 <InputText data={this.state.inputData} filterByIndex={this.filterByInputIndex}
-                  showMinimap={!this.state.resizing} filtered={this.state.filtered} lock={this.lock}
+                  showMinimap={!this.state.resizingText} filtered={this.state.filtered} lock={this.lock}
                   locked={this.state.locked} /> :
                 <Loading />
               }
@@ -105,6 +114,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
             {this.state.resizing ? null : this.state.flowmapData === null ? <Loading /> :
               <Flowmap data={this.state.flowmapData} filtered={this.state.filtered}
                 filterByOutputIndex={this.filterByOutputIndex} filterByInputIndex={this.filterByInputIndex}
+                zoomByInputIndex={this.zoomByInputIndex} setResizingText={this.setResizingText}
                 lock={this.lock} locked={this.state.locked} redraw={this.state.redraw}/>
             }
             <div className="vertical">
@@ -167,7 +177,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
         pos: d.pos,
         weight: inputAttention[d.index]
       }
-    })
+    });
 
     return inputData;
   }
@@ -241,9 +251,14 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
     const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(
       this.data, this.state.minAttnWeight, outputFilter);
 
+    const inputDataTrueIndex = inputData.reduce((map: any, d: InputRecord, i: number) => {
+      map[d.index] = i;
+      return map;
+    }, {});
+
     attentionRecords.forEach(function (d: FlowmapAttentionRecord) {
       if (d.selected) {
-        inputData[d.inputIndex].selected = true;
+        inputData[inputDataTrueIndex[d.inputIndex]].selected = true;
         outputData[d.outputIndex].selected = true;
       }
     });
@@ -258,7 +273,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       inputData,
       outputData,
       flowmapData,
-      filtered: !!filter
+      filtered: !!filter,
+      redraw: false
     });
   }
 
@@ -294,7 +310,8 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       inputData,
       outputData,
       flowmapData,
-      filtered: !!filter
+      filtered: !!filter,
+      redraw: false
     });
   }
 
@@ -325,8 +342,25 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       inputData,
       outputData,
       flowmapData,
-      filtered: true
+      filtered: true,
+      redraw: false
     });
+  }
+
+  private setResizingText(resizingText: boolean) {
+    this.setState({ resizingText });
+  }
+
+  private zoomByInputIndex(start: number, end: number) {
+    this.data.inputTokens = this.originalData.inputTokens.filter(function(d: InputRecord, i: number) {
+      return d.index >= start && d.index <= end;
+    });
+    this.data.attentionRecords = this.originalData.attentionRecords.filter(function(d: AttentionRecord, i: number) {
+      return d.inputIndex >= start && d.inputIndex <= end;
+    });
+
+    const newState = this.getStateFromData(this.data, this.state.dataRecord, this.state.minAttnWeight, true);
+    this.setState(newState);
   }
 
   private lock(lock: boolean) {
@@ -338,18 +372,23 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
   private setDataSource(dataRecord: DataRecord) {
     this.setState(this.getStateFromData(null, dataRecord, this.state.minAttnWeight));
     d3.json(dataRecord.url).then((data: AttentionData) => {
-      this.data = data;
+      this.originalData = data;
+      this.data = {
+        attentionRecords: data.attentionRecords.slice(),
+        inputTokens: data.inputTokens.slice(),
+        outputTokens: data.outputTokens.slice() 
+      }
       this.setState(this.getStateFromData(data, dataRecord, this.state.minAttnWeight));
     });
   }
 
-  private getStateFromData(data: AttentionData, dataRecord: DataRecord, minAttnWeight: number) {
+  private getStateFromData(data: AttentionData, dataRecord: DataRecord, minAttnWeight: number, redraw?: boolean) {
     let inputData = null;
     let outputData = null;
     let flowmapAttentionData = null;
     let flowmapData = null;
 
-    let redraw = false;
+    redraw = typeof redraw === 'undefined' ? false : redraw;
 
     if (this.state && this.state.minAttnWeight !== minAttnWeight) {
       redraw = true;
@@ -377,6 +416,7 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       // @ts-ignore
       flowmapData: flowmapData,
       resizing: false,
+      resizingText: false,
       filtered: false,
       locked: false,
       minAttnWeight: minAttnWeight,

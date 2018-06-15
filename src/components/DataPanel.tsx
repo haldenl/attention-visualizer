@@ -25,17 +25,47 @@ interface State {
 
 const STORAGE_KEY = 'attention-visualization-data-sources';
 
-const DEMO = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_17.json';
+const DEMO = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/manchester_data_0.json';
 const MICHELLE_MODEL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_0.json';
 const MICHELLE_HIERARCHICAL = 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/hierarchical_similarity_data_michelle_3.json';
 const MICHELLE_TEACHER =
 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/teacher_data_0.json';
 const DEMO_RECORD: DataRecord = { name: 'DEMO', url: DEMO }
-const MICHELLE_MODEL_RECORD: DataRecord = { name: 'michelle_model', url: MICHELLE_MODEL };
-const MICHELLE_HIERARCHICAL_RECORD: DataRecord = { name: 'michelle_hierarchical', url: MICHELLE_HIERARCHICAL };
-const MICHELLE_TEACHER_RECORD: DataRecord = { name: 'michelle_teacher', url: MICHELLE_TEACHER };
+const MICHELLE_MODEL_RECORD: DataRecord = { name: 'michelle_model_attention', url: MICHELLE_MODEL };
+const MICHELLE_HIERARCHICAL_RECORD: DataRecord = { name: 'michelle_hierarchical_similarity', url: MICHELLE_HIERARCHICAL };
+const MICHELLE_TEACHER_RECORD: DataRecord = { name: 'michelle_teacher_forcing', url: MICHELLE_TEACHER };
+const WOMEN_MODEL_RECORD: DataRecord = {
+  name: 'women_model_attention', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_5.json'
+}
+const WOMEN_TEACHER_RECORD: DataRecord = {
+  name: 'women_teacher_forcing', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/teacher_data_5.json'
+}
+const WOMEN_HIERARCHICAL_RECORD: DataRecord = {
+  name: 'women_hierchical_similarity', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/hierarchical_similarity_data_women_1.json'
+}
+const CHARLOTTE_MODEL_RECORD: DataRecord = {
+  name: 'charlotte_model_attention', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_15.json'
+}
+const CHARLOTTE_TEACHER_RECORD: DataRecord = {
+  name: 'charlotte_teacher_forcing', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/teacher_data_15.json'
+}
+const CHARLOTTE_HIERARCHICAL_RECORD: DataRecord = {
+  name: 'charlotte_hierarchical_similarity', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/hierarchical_similarity_data_charlotte.json'
+}
+const SPACE_MODEL_RECORD: DataRecord = {
+  name: 'space_model_attention', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/model_data_2.json'
+}
+const SPACE_TEACHER_RECORD: DataRecord = {
+  name: 'space_teacher_forcing', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/teacher_data_2.json'
+}
+const SPACE_HIERARCHICAL_RECORD: DataRecord = {
+  name: 'space_hierarchical_similarity', url: 'https://raw.githubusercontent.com/haldenl/nlpcapstone/master/data/hierarchical_similarity_data_space.json'
+}
 
-const DEMOS: DataRecord[] = [DEMO_RECORD, MICHELLE_MODEL_RECORD, MICHELLE_HIERARCHICAL_RECORD, MICHELLE_TEACHER_RECORD];
+
+const DEMOS: DataRecord[] = [DEMO_RECORD, MICHELLE_MODEL_RECORD, MICHELLE_TEACHER_RECORD, MICHELLE_HIERARCHICAL_RECORD,
+  WOMEN_MODEL_RECORD, WOMEN_TEACHER_RECORD, WOMEN_HIERARCHICAL_RECORD, CHARLOTTE_MODEL_RECORD, CHARLOTTE_TEACHER_RECORD,
+  CHARLOTTE_HIERARCHICAL_RECORD, SPACE_MODEL_RECORD, SPACE_TEACHER_RECORD, SPACE_HIERARCHICAL_RECORD];
 
 export interface DataRecord {
   name: string;

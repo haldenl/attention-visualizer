@@ -43,6 +43,10 @@ export default class InputText extends React.Component<Props, State> {
 
   static getDerivedStateFromProps(nextProps: Props, prevState: State) {
     const weightDomain = [0, WEIGHT_SCALE * d3.max(nextProps.data, (d: InputRecord) => { return d.weight })];
+
+    if (weightDomain[1] === 0) {
+      weightDomain[1] = 1;
+    }
     // @ts-ignore
     const colorScale = d3.scaleSequential(d3.interpolateBlues).domain(weightDomain);
 
