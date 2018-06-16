@@ -292,9 +292,14 @@ export default class AttentionVisualizer extends React.Component<Props, State> {
       }
     }
 
-    const inputData: InputRecord[] = AttentionVisualizer.getInputData(this.data, null)
+    const inputData: InputRecord[] = AttentionVisualizer.getInputData(this.data, null);
+    const inputDataTrueIndex = inputData.reduce((map: any, d: InputRecord, i: number) => {
+      map[d.index] = i;
+      return map;
+    }, {});
+
     inputData.forEach(function (d: InputRecord) {
-      d.selected = filter ? filter(d.index) : false;
+      d.selected = filter ? filter(inputDataTrueIndex[d.index]) : false;
     });
     const outputData = AttentionVisualizer.getOutputData(this.data, inputFilter);
     const attentionRecords = AttentionVisualizer.getFlowmapAttentionData(this.data, this.state.minAttnWeight, inputFilter);
