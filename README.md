@@ -1,6 +1,6 @@
 # attention-visualizer
 
-A tool for visualizing attention in sequence-to-sequence summarization models. Built in React, using D3.
+A tool for visualizing attention in sequence-to-sequence summarization models. Built with D3 + React.
 
 The example data presented was generated using a pre-trained model by See et al (2017).
 
