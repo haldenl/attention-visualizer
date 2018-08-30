@@ -1,11 +1,11 @@
 # Attention Visualizer
 
-Use it! [haldenl.github.io/attention-visualizer](haldenl.github.io/attention-visualizer)
+Use it! [haldenl.github.io/attention-visualizer](https://haldenl.github.io/attention-visualizer)
 
 A tool for visualizing attention in sequence-to-sequence summarization models. Built with D3 + React.
 
 Publication:
-[Visualizing Attention in Sequence-to-Sequence Summarization Models](haldenl.com/papers/2018-vast-attention), (poster) VAST 2018
+[Visualizing Attention in Sequence-to-Sequence Summarization Models](https://haldenl.com/papers/2018-vast-attention), (poster) VAST 2018
 
 The example data presented was generated using a pre-trained model by See et al (2017): [Get To The Point: Summarization with Pointer-Generator Networks](https://arxiv.org/pdf/1704.04368.pdf).
 
